@@ -70,9 +70,10 @@ void comp_rhs(float **f, float **g,float **rhs,int imax,int jmax,float delt,floa
     }
 	return;
 }
-int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float eps,int itermax,float omg,float res){
-	int it,j,i,eiw,eie,ejs,ejn,sum;
+int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float eps,int itermax,float omg){
+	int it,j,i,eiw,eie,ejs,ejn,sum,count;
 	float **r;
+    float res;
 	for(it=0;it<itermax;it++){
 		for(j=1;j<jmax+1;j++){
 			p[j][0]=p[j][1];
@@ -108,6 +109,7 @@ int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float 
 
 				r[j][i]=(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))/(delx*delx)
 				+(ejn*(p[j][i+1]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
+                count++;
 			}
 		}
 		for(j=1;j<jmax+1;j++){
@@ -115,7 +117,7 @@ int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float 
 			sum=sum+r[j][i]*r[j][i];
 		    }
         }
-        res=sqrt(sum);
+        res=sqrt(sum/count);
         if(res<eps)
         	break;
 	}
