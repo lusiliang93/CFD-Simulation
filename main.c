@@ -95,15 +95,13 @@ int main(int argc,char* argv[]){
     printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
 
 	/* assign initial values to u,v,p,f,g,rhs*/
-	u=RMATRIX(0,imax+2,0,jmax+2);
-	v=RMATRIX(0,imax+2,0,jmax+2);
-	p=RMATRIX(0,imax+2,0,jmax+2);
-	f=RMATRIX(0,imax+2,0,jmax+2);
-	g=RMATRIX(0,imax+2,0,jmax+2);
-	rhs=RMATRIX(0,imax+2,0,jmax+2);
-
+	u=RMATRIX(0,imax+1,0,jmax+1);
+	v=RMATRIX(0,imax+1,0,jmax+1);
+	p=RMATRIX(0,imax+1,0,jmax+1);
+	f=RMATRIX(0,imax+1,0,jmax+1);
+	g=RMATRIX(0,imax+1,0,jmax+1);
+	rhs=RMATRIX(0,imax+1,0,jmax+1);
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
-
 	while(t<tend){
         if(n==0){
 		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
@@ -125,7 +123,6 @@ int main(int argc,char* argv[]){
             adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
-            printf("test u:%f\n",u[64][64]);
             printf("The current delt:%f\n",delt);
             printf("The current t:%f\n",t);
         }
@@ -154,12 +151,12 @@ int main(int argc,char* argv[]){
 	printf("u into file:%s\n",outputfilenameu);
 	printf("v into file:%s\n",outputfilenamev);
 
-	FREE_RMATRIX(u,0,imax+2,0,jmax+2);
-	FREE_RMATRIX(v,0,imax+2,0,jmax+2);
-	FREE_RMATRIX(p,0,imax+2,0,jmax+2);
-	FREE_RMATRIX(f,0,imax+2,0,jmax+2);
-	FREE_RMATRIX(g,0,imax+2,0,jmax+2);
-	FREE_RMATRIX(rhs,0,imax+2,0,jmax+2);
+	FREE_RMATRIX(u,0,imax+1,0,jmax+1);
+	FREE_RMATRIX(v,0,imax+1,0,jmax+1);
+	FREE_RMATRIX(p,0,imax+1,0,jmax+1);
+	FREE_RMATRIX(f,0,imax+1,0,jmax+1);
+	FREE_RMATRIX(g,0,imax+1,0,jmax+1);
+	FREE_RMATRIX(rhs,0,imax+1,0,jmax+1);
 	/*post for visualization*/
     return 0;
 }

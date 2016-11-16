@@ -8,6 +8,12 @@ void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,doub
 	int j,i;
 	double a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
 	double ua,ub,uvx,v2y,v2x2,v2y2;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            f[j][i]=0;
+            g[j][i]=0;
+        }
+    }
 	for(j=1;j<jmax+1;j++){
 		f[j][0]=u[j][0];
 		f[j][imax]=u[j][imax];
@@ -59,10 +65,17 @@ void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,doub
 
 		}
 	}
+    /*printf("test f:%f\n",f[64][64]);
+    printf("test g:%f\n",g[64][64]);*/
 	return;
 }
 void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,double delx,double dely){
 	int j,i;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            rhs[j][i]=0;
+        }
+    }
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
 			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i]-g[j-1][i])/dely);
@@ -85,29 +98,18 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 			p[jmax+1][i]=p[jmax][i];
 		}
 		r=RMATRIX(0,jmax+1,0,imax+1); /* Is that right??*/
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
+                r[j][i]=0;
+            }
+        }
 		for(j=1;j<jmax+1;j++){
 			for(i=1;i<imax+1;i++){
-				/*if(i==1)
-					eiw=0;
-				else
-					eiw=1;
-				if(i==imax)
-					eie=0;
-				else
-					eie=1;
-				if(j==1)
-					ejs=0;
-				else
-					ejs=1;
-				if(j==jmax)
-					ejn=0;
-				else
-					ejn=1;*/
                 eiw=1;eie=1;ejs=1;ejn=1;
 				p[j][i]=(1-omg)*p[j][i]
 				+omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
-				*((eie*p[j][i+1])+eiw*p[j][i-1])/(delx*delx)
-				+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)-rhs[j][i];
+				*((eie*p[j][i+1]+eiw*p[j][i-1])/(delx*delx)
+				+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)-rhs[j][i]);
 
 				r[j][i]=(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))/(delx*delx)
 				+(ejn*(p[j+1][i]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
@@ -115,12 +117,15 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 			}
 		}
         FREE_RMATRIX(r,0,jmax+1,0,imax+1);
-        res=sqrt(sum);
+        res=sqrt(sum/(imax*jmax));
+        /* Res cannot converge...yousang*/
         printf("res is %f\n",res);
-        if(res<eps)
-            printf("Converged...%f",res);
+        if(res<eps){
+            printf("Converged...%f\n",res);
         	break;
+        }
 	}
+    /*printf("pressure test:%f\n",p[jmax+2][64]);*/
 	return it;
 }
 
@@ -136,5 +141,8 @@ void adap_uv(double **u,double **v,double **f,double **g,double **p,int imax,int
     		v[j][i]=g[j][i]-delt/dely*(p[j+1][i]-p[j][i]);
     	}
     }
+    /*printf("adap test u:%f\n",u[64][64]);
+    printf("adap test v:%f\n",v[64][64]);
+    */
 	return;
 }
