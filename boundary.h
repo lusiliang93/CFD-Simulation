@@ -1,6 +1,6 @@
 #ifndef _BOUNDARY_H
 #define _BOUNDARY_H
-void setbound(float **u,float **v,int imax,int jmax,int wW, int wE,int wN,int wS);
-void setspecbcond(float **u,float **v,int imax,int jmax,char **problem);
-void comp_fg(float **u,float **v,float **f,float **g, int imax,int jmax,float delt,float delx,float dely,float gx,float gy,float gamma,float Re);
+void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS);
+void setspecbcond(double **u,double **v,int imax,int jmax,char **problem);
+void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re);
 #endif

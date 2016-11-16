@@ -4,10 +4,10 @@
 #include <math.h>
 #include "init.h"
 #include "uvp.h"
-void comp_fg(float **u,float **v,float **f,float **g, int imax,int jmax,float delt,float delx,float dely,float gx,float gy,float gamma,float Re){
+void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
 	int j,i;
-	float a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
-	float ua,ub,uvx,v2y,v2x2,v2y2;
+	double a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
+	double ua,ub,uvx,v2y,v2x2,v2y2;
 	for(j=1;j<jmax+1;j++){
 		f[j][0]=u[j][0];
 		f[j][imax]=u[j][imax];
@@ -61,7 +61,7 @@ void comp_fg(float **u,float **v,float **f,float **g, int imax,int jmax,float de
 	}
 	return;
 }
-void comp_rhs(float **f, float **g,float **rhs,int imax,int jmax,float delt,float delx,float dely){
+void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,double delx,double dely){
 	int j,i;
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
@@ -70,10 +70,11 @@ void comp_rhs(float **f, float **g,float **rhs,int imax,int jmax,float delt,floa
     }
 	return;
 }
-int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float eps,int itermax,float omg){
-	int it,j,i,eiw,eie,ejs,ejn,sum,count;
-	float **r;
-    float res;
+int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg){
+	int it,j,i,eiw,eie,ejs,ejn;
+    double sum=0;
+	double **r;
+    double res;
 	for(it=0;it<itermax;it++){
 		for(j=1;j<jmax+1;j++){
 			p[j][0]=p[j][1];
@@ -86,7 +87,7 @@ int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float 
 		r=RMATRIX(0,jmax+1,0,imax+1); /* Is that right??*/
 		for(j=1;j<jmax+1;j++){
 			for(i=1;i<imax+1;i++){
-				if(i==1)
+				/*if(i==1)
 					eiw=0;
 				else
 					eiw=1;
@@ -101,30 +102,29 @@ int poisson(float **p,float **rhs,int imax,int jmax,float delx,float dely,float 
 				if(j==jmax)
 					ejn=0;
 				else
-					ejn=1;
+					ejn=1;*/
+                eiw=1;eie=1;ejs=1;ejn=1;
 				p[j][i]=(1-omg)*p[j][i]
 				+omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
-				*((eie*p[j][i+1])+eiw*p[j-1][i])/(delx*delx)
+				*((eie*p[j][i+1])+eiw*p[j][i-1])/(delx*delx)
 				+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)-rhs[j][i];
 
 				r[j][i]=(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))/(delx*delx)
-				+(ejn*(p[j][i+1]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
-                count++;
+				+(ejn*(p[j+1][i]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
+                sum=sum+r[j][i]*r[j][i];
 			}
 		}
-		for(j=1;j<jmax+1;j++){
-		    for(i=1;i<imax+1;i++){
-			sum=sum+r[j][i]*r[j][i];
-		    }
-        }
-        res=sqrt(sum/count);
+        FREE_RMATRIX(r,0,jmax+1,0,imax+1);
+        res=sqrt(sum);
+        printf("res is %f\n",res);
         if(res<eps)
+            printf("Converged...%f",res);
         	break;
 	}
 	return it;
 }
 
-void adap_uv(float **u,float **v,float **f,float **g,float **p,int imax,int jmax,float delt,float delx,float dely){
+void adap_uv(double **u,double **v,double **f,double **g,double **p,int imax,int jmax,double delt,double delx,double dely){
     int i,j;
     for(j=1;j<jmax+1;j++){
     	for(i=1;i<imax;i++){

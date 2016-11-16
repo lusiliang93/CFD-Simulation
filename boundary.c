@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "boundary.h"
-void setbound(float **u,float **v,int imax,int jmax,int wW, int wE,int wN,int wS){
+void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS){
 	int j,i;
 	int us=1;
 	for(j=1;j<jmax+1;j++){
@@ -20,6 +20,6 @@ void setbound(float **u,float **v,int imax,int jmax,int wW, int wE,int wN,int wS
 	return;
 }
 
-void setspecbcond(float **u,float **v,int imax,int jmax,char **problem){
+void setspecbcond(double **u,double **v,int imax,int jmax,char **problem){
 	return;
 }
