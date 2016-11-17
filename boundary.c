@@ -17,7 +17,7 @@ void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int 
 		u[0][i]=-u[1][i];
 		u[jmax+1][i]=2*us-u[jmax][i];
 	}
-    printf("setbnd test u:%f\n",u[jmax+1][64]);
+    /*printf("setbnd test u:%f\n",u[jmax+1][64]);*/
 	return;
 }
 
