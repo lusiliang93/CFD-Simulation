@@ -85,7 +85,7 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
 }
 int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg){
 	int it,j,i,eiw,eie,ejs,ejn;
-    double sum=0;
+    double sum;
 	double **r;
     double res;
 	for(it=0;it<itermax;it++){
@@ -97,12 +97,13 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 			p[0][i]=p[1][i];
 			p[jmax+1][i]=p[jmax][i];
 		}
-		r=RMATRIX(0,jmax+1,0,imax+1); /* Is that right??*/
+		r=RMATRIX(0,jmax+1,0,imax+1); 
         for(j=0;j<jmax+2;j++){
             for(i=0;i<imax+2;i++){
                 r[j][i]=0;
             }
         }
+        sum=0;
 		for(j=1;j<jmax+1;j++){
 			for(i=1;i<imax+1;i++){
                 eiw=1;eie=1;ejs=1;ejn=1;
@@ -118,7 +119,6 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		}
         FREE_RMATRIX(r,0,jmax+1,0,imax+1);
         res=sqrt(sum/(imax*jmax));
-        /* Res cannot converge...yousang*/
         printf("res is %f\n",res);
         if(res<eps){
             printf("Converged...%f\n",res);
@@ -126,6 +126,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
         }
 	}
     /*printf("pressure test:%f\n",p[jmax+2][64]);*/
+    printf("number of iteration:%d\n",it);
 	return it;
 }
 
