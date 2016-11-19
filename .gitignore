@@ -1,0 +1,5 @@
+run
+*.o
+output*
+test.txt
+.DS_Store
