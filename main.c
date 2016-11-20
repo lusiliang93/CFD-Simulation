@@ -15,6 +15,7 @@ double max(double** u,int imax,int jmax){
 				max=u[j][i];
 		}
 	}
+    /*printf("max u:%f\n",max);*/
 	return max;
 }
 
@@ -131,6 +132,7 @@ int main(int argc,char* argv[]){
 		printf("The current t:%f\n",t);
         }else{
             comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
+            /*printf("seg fault:%f\n",u[128][128]);*/
             setbound(u,v,imax,jmax,wW,wE,wN,wS);
             comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
@@ -140,6 +142,7 @@ int main(int argc,char* argv[]){
             n++;
             printf("The current delt:%f\n",delt);
             printf("The current t:%f\n",t);
+            /*printf("seg falut:%f\n",u[128][128]);*/
         }
 
 	}
