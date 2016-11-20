@@ -78,7 +78,7 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
     }
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
-			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
+			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i])/dely);
         }
     }
     printf("test rhs:%f\n",rhs[32][1]);
