@@ -78,9 +78,10 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
     }
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
-			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i]-g[j-1][i])/dely);
+			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
         }
     }
+    printf("test rhs:%f\n",rhs[32][1]);
 	return;
 }
 int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg){
@@ -97,7 +98,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 			p[0][i]=p[1][i];
 			p[jmax+1][i]=p[jmax][i];
 		}
-		r=RMATRIX(0,jmax+1,0,imax+1); 
+		r=RMATRIX(0,jmax+1,0,imax+1); /* Is that right??*/
         for(j=0;j<jmax+2;j++){
             for(i=0;i<imax+2;i++){
                 r[j][i]=0;
@@ -143,7 +144,6 @@ void adap_uv(double **u,double **v,double **f,double **g,double **p,int imax,int
     	}
     }
     /*printf("adap test u:%f\n",u[64][64]);
-    printf("adap test v:%f\n",v[64][64]);
-    */
+    printf("adap test v:%f\n",v[64][64]);*/
 	return;
 }
