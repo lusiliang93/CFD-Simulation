@@ -3,9 +3,11 @@
 #include <unistd.h>
 #include <limits.h>
 #include <math.h>
+#include <time.h>
 #include "init.h"
 #include "boundary.h"
 #include "uvp.h"
+
 double max(double** u,int imax,int jmax){
 	int i,j;
 	double max=0;
@@ -70,6 +72,8 @@ int main(int argc,char* argv[]){
     char *outputfilenameu1;
     char *outputfilenamev1;
     char *inputname=NULL;
+    clock_t t1,t2;
+    double  total_t;
 	/*Read command line arguments*/
 	do {
 		opt = getopt(argc,argv,"f:"); /*why type -f?*/
@@ -118,6 +122,7 @@ int main(int argc,char* argv[]){
 	xx=(double *)malloc((imax+1)*sizeof(double));
 	yy=(double *)malloc((jmax+1)*sizeof(double));
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
+    t1=clock();
 	while(t<tend){
         if(n==0){
 		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
@@ -140,12 +145,14 @@ int main(int argc,char* argv[]){
             adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
-            printf("The current delt:%f\n",delt);
+            /*printf("The current delt:%f\n",delt);*/
             printf("The current t:%f\n",t);
-            /*printf("seg falut:%f\n",u[128][128]);*/
         }
 
 	}
+    t2=clock();
+    total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
+    printf("Time elapsed:%f\n",total_t);
 
 	outputfilenameu="outputu.txt";
     outputfilenamev="outputv.txt";

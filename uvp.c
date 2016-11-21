@@ -81,7 +81,7 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
 			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
         }
     }
-    printf("test rhs:%f\n",rhs[32][1]);
+    /*printf("test rhs:%f\n",rhs[32][1]);*/
 	return;
 }
 int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg){
@@ -120,14 +120,14 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		}
         FREE_RMATRIX(r,0,jmax+1,0,imax+1);
         res=sqrt(sum/(imax*jmax));
-        printf("res is %f\n",res);
+        /*printf("res is %f\n",res);*/
         if(res<eps){
             printf("Converged...%f\n",res);
         	break;
         }
 	}
     /*printf("pressure test:%f\n",p[jmax+2][64]);*/
-    printf("number of iteration:%d\n",it);
+    /*printf("number of iteration:%d\n",it);*/
 	return it;
 }
 
