@@ -44,12 +44,13 @@ void comp_delt(double* delt,int imax,int jmax,double delx,double dely,double **u
 int main(int argc,char* argv[]){
 	int opt=0,n=0;
 	double t=0;
-	double xlength,ylength;
+	double xlength,ylength,width,height,uin,vin,inlet,outlet;
 	double tend,tau,itermax,eps,omg,gamma;
 	double Re,GX,GY,UI,VI,PI;
 	int imax,jmax;
 	int wW,wE,wS,wN;
 	double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
+	double xB,xC,xD,xG,yI;
 	double **u;
 	double **v;
 	double **p;
@@ -62,6 +63,7 @@ int main(int argc,char* argv[]){
 	double *yy;
 	double delx,dely,delt;
 	int i,j,ii,jj;
+	int iB,iC,iD,iG,jI;
     FILE *input;
     FILE *outputu;
     FILE *outputv;
@@ -98,16 +100,21 @@ int main(int argc,char* argv[]){
 		return -1;
 	}
 
-
 	fscanf(input,"%lf %lf\n",&xlength,&ylength);
 	fscanf(input,"%d %d\n",&imax,&jmax);
 	fscanf(input,"%lf %lf %lf %lf %lf %lf\n",&Re,&UI,&VI,&PI,&GX,&GY);
 	/* tau must be postive*/
 	fscanf(input,"%lf %lf %lf %lf %lf %lf \n",&tend,&tau,&itermax,&eps,&omg,&gamma);
 	fscanf(input,"%d %d %d %d\n",&wW,&wE,&wN,&wS);
+	fscanf(input,"%lf %lf %lf %lf\n",&width,&height,&inlet,&outlet);
+	fscanf(input,"%lf %lf\n",&uin,&vin);
+
 	delx=xlength/imax;
 	dely=ylength/jmax;
-    printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
+    printf("xlength:%f ylength:%f server width:%f server height:%f\n",xlength,ylength,width,height);
+    printf("inlet diameter:%f outlet diameter:%f\n",inlet,outlet);
+    printf("jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
+    printf("inlet u:%f inlet v:%f\n",uin,vin);
 
 	/* assign initial values to u,v,p,f,g,rhs,uu,vv*/
 	u=RMATRIX(0,imax+1,0,jmax+1);
@@ -121,16 +128,21 @@ int main(int argc,char* argv[]){
 	/* allocate memory to xx, yy*/
 	xx=(double *)malloc((imax+1)*sizeof(double));
 	yy=(double *)malloc((jmax+1)*sizeof(double));
+	/* create geometric model of data center*/
+	xB=width/2; xC=xB+0.3; xD=xC+inlet;xG=outlet/2;yI=height;
+	iB=round(xB/delx);iC=round(xC/delx);iD=round(xD/delx);iG=round(xG/delx);jI=round(yI/dely);
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
+    printf("test iB:%d,iC:%d,iD:%d,iG:%d,jI:%d\n",iB,iC,iD,iG,jI);
     t1=clock();
 	while(t<tend){
         if(n==0){
 		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
         delt=0.02;
-		setbound(u,v,imax,jmax,wW, wE,wN,wS);
-		comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+		setbound(u,v,imax,jmax,wW, wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
+        /*printf("seg fault:%f",u[128][128]);*/
+		comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
 		comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
-		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
+		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
 		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
 		t=t+delt;
 		n++;
@@ -138,10 +150,10 @@ int main(int argc,char* argv[]){
         }else{
             comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
             /*printf("seg fault:%f\n",u[128][128]);*/
-            setbound(u,v,imax,jmax,wW,wE,wN,wS);
-            comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+            setbound(u,v,imax,jmax,wW,wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
+            comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
-            poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
+            poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
             adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
