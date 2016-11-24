@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS = -Wall -pedantic
+CFLAGS = -Wall -pedantic -std=c99
 .SUFFIXES: .o .c
 .c.o: ; $(CC) -c $(CFLAGS) $*.c
 OBJ = init.o boundary.o uvp.o main.o
@@ -11,3 +11,6 @@ init.o :init.h
 boundary.o: boundary.h
 uvp.o: uvp.h
 main.o: init.h boundary.h uvp.h
+clean:
+	rm -rf *.o
+	rm run
