@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "boundary.h"
+/*print out the matrix*/
 void printm(double **u,int imax,int jmax){
     int i,j;
     for(j=0;j<jmax+2;j++){
