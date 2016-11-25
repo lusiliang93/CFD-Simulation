@@ -117,6 +117,7 @@ int main(int argc,char* argv[]){
     printf("inlet u:%f inlet v:%f\n",uin,vin);
 
 	/* assign initial values to u,v,p,f,g,rhs,uu,vv*/
+    /*exchange imax,jmax*/
 	u=RMATRIX(0,imax+1,0,jmax+1);
 	v=RMATRIX(0,imax+1,0,jmax+1);
 	p=RMATRIX(0,imax+1,0,jmax+1);
@@ -139,9 +140,9 @@ int main(int argc,char* argv[]){
 		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);*/
         delt=0.02;
 		setbound(u,v,imax,jmax,wW, wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
+        /*printm(u,imax,jmax);*/
 		comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
-        /*printm(f,imax,jmax);
-        printf("seg fault:%f\n",u[128][128]);*/
+        /*printm(f,imax,jmax);*/
 		comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
         /*printf("seg fault:%f\n",u[128][128]);*/
 		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
@@ -157,6 +158,7 @@ int main(int argc,char* argv[]){
             comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
             poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
+            /*printf("seg fault:%f\n",u[128][128]);*/
             adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely,iB,jI);
             /*printf("seg fault:%f\n",u[128][128]);*/
             t=t+delt;

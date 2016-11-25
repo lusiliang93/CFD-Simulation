@@ -113,7 +113,7 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
 			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
         }
     }
-    printf("test rhs:%f\n",rhs[1][24]);
+    /*printf("test rhs:%f\n",rhs[1][24]);*/
 	return;
 }
 int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg,int iB,int iC,int iD,int iG,int jI){
@@ -121,6 +121,9 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
     double r;
     double sum;
     double res;
+    double **Rp;
+    /*Assign memory for room pressure*/
+    Rp=RMATRIX(0,jmax+1,0,imax+1);
 	for(it=0;it<itermax;it++){
 		/*for(j=1;j<jmax+1;j++){
 			p[j][0]=p[j][1];
@@ -136,15 +139,15 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		}
 		/*room left,HI*/
 		for(j=jI+1;j<jmax+1;j++){
-			p[j][0]=p[j][1];
+			Rp[j][0]=p[j][1];
 		}
 		/* room right,EF*/
 		for(j=1;j<jmax+1;j++){
-			p[j][imax+1]=p[j][imax];
+			Rp[j][imax+1]=p[j][imax];
 		}
 		/* room bottom, BE*/
 		for(i=iB+1;i<imax+1;i++){
-			p[0][i]=p[1][i];
+			Rp[0][i]=p[1][i];
 		}
 		/* server top,IJ*/
 		for(i=1;i<iB+1;i++){
@@ -152,7 +155,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		}
 		/* room top,HF*/
 		for(i=1;i<imax+1;i++){
-			p[jmax][i]=p[jmax-1][i];
+			Rp[jmax][i]=p[jmax-1][i];
 		}
 		/* server NE corner,J*/
 		p[jI][iB]=(p[jI+1][iB]+p[jI][iB+1])/2;
@@ -183,6 +186,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
         	break;
         }
 	}
+    FREE_RMATRIX(Rp,0,jmax+1,0,imax+1);
     /*printf("pressure test:%f\n",p[jmax+2][64]);*/
     printf("number of iteration:%d\n",it);
 	return it;
