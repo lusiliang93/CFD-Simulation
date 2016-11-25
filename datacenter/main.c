@@ -132,18 +132,21 @@ int main(int argc,char* argv[]){
 	xB=width/2; xC=xB+0.3; xD=xC+inlet;xG=outlet/2;yI=height;
 	iB=round(xB/delx);iC=round(xC/delx);iD=round(xD/delx);iG=round(xG/delx);jI=round(yI/dely);
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
-    printf("test iB:%d,iC:%d,iD:%d,iG:%d,jI:%d\n",iB,iC,iD,iG,jI);
+    /*printf("test iB:%d,iC:%d,iD:%d,iG:%d,jI:%d\n",iB,iC,iD,iG,jI);*/
     t1=clock();
 	while(t<tend){
         if(n==0){
-		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
+		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);*/
         delt=0.02;
 		setbound(u,v,imax,jmax,wW, wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
-        /*printf("seg fault:%f",u[128][128]);*/
-		comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
+		comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
+        /*printm(f,imax,jmax);
+        printf("seg fault:%f\n",u[128][128]);*/
 		comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
+        /*printf("seg fault:%f\n",u[128][128]);*/
 		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
-		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely,iB,jI);
+        /*printf("seg fault:%f\n",u[128][128]);*/
 		t=t+delt;
 		n++;
 		printf("The current t:%f\n",t);
@@ -154,14 +157,14 @@ int main(int argc,char* argv[]){
             comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
             poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
-            adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+            adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely,iB,jI);
+            /*printf("seg fault:%f\n",u[128][128]);*/
             t=t+delt;
             n++;
             /*printf("The current delt:%f\n",delt);*/
             printf("The current t:%f\n",t);
         }
-
-	}
+    }
     t2=clock();
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
     printf("Time elapsed:%f\n",total_t);
@@ -173,7 +176,7 @@ int main(int argc,char* argv[]){
 
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
-			fprintf(outputu,"%f ",u[j][i]);
+		  fprintf(outputu,"%f ",u[j][i]);
 		}
 		fprintf(outputu,"\n");
 	}
