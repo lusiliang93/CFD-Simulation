@@ -2,6 +2,16 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "boundary.h"
+/*print out the matrix*/
+void printm(double **u,int imax,int jmax){
+    int i,j;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            printf("%f ",u[j][i]);
+        }
+        printf("\n");
+    }
+}
 void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS,double uin,double vin,int iB,int iC,int iD,int iG,int jI){
 	int j,i;
 	/*int us=1;
@@ -54,12 +64,15 @@ void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int 
 		v[j][0]=v[j][1];
 	}
 	/*IJ,no-slip,server top*/
-	for(i=1;i<iB+1;i++){
+	for(i=1;i<iB;i++){
 		u[jI][i]=-u[jI+1][i];
 		v[jI][i]=0;
 	}
+    /*Corner J,no-slip on N,E*/
+    u[jI][iB]=0;
+    v[jI][iB]=0;
 	/* JB,no-slip,server right*/
-	for(j=1;j<jI+1;j++){
+	for(j=1;j<jI;j++){
 		u[j][iB]=0;
 		v[j][iB]=-v[j][iB+1];
 	}

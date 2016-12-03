@@ -3,3 +3,6 @@ run
 output*
 test.txt
 .DS_Store
+*output*.txt
+*.png
+*.jpg

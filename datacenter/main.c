@@ -117,14 +117,14 @@ int main(int argc,char* argv[]){
     printf("inlet u:%f inlet v:%f\n",uin,vin);
 
 	/* assign initial values to u,v,p,f,g,rhs,uu,vv*/
-	u=RMATRIX(0,imax+1,0,jmax+1);
-	v=RMATRIX(0,imax+1,0,jmax+1);
-	p=RMATRIX(0,imax+1,0,jmax+1);
-	f=RMATRIX(0,imax+1,0,jmax+1);
-	g=RMATRIX(0,imax+1,0,jmax+1);
-	rhs=RMATRIX(0,imax+1,0,jmax+1);
-	uu=RMATRIX(0,imax,0,jmax);
-	vv=RMATRIX(0,imax,0,jmax);
+	u=RMATRIX(0,jmax+1,0,imax+1);
+	v=RMATRIX(0,jmax+1,0,imax+1);
+	p=RMATRIX(0,jmax+1,0,imax+1);
+	f=RMATRIX(0,jmax+1,0,imax+1);
+	g=RMATRIX(0,jmax+1,0,imax+1);
+	rhs=RMATRIX(0,jmax+1,0,imax+1);
+	uu=RMATRIX(0,jmax,0,imax);
+	vv=RMATRIX(0,jmax,0,imax);
 	/* allocate memory to xx, yy*/
 	xx=(double *)malloc((imax+1)*sizeof(double));
 	yy=(double *)malloc((jmax+1)*sizeof(double));
@@ -132,36 +132,32 @@ int main(int argc,char* argv[]){
 	xB=width/2; xC=xB+0.3; xD=xC+inlet;xG=outlet/2;yI=height;
 	iB=round(xB/delx);iC=round(xC/delx);iD=round(xD/delx);iG=round(xG/delx);jI=round(yI/dely);
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
-    printf("test iB:%d,iC:%d,iD:%d,iG:%d,jI:%d\n",iB,iC,iD,iG,jI);
     t1=clock();
 	while(t<tend){
         if(n==0){
-		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
+		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);*/
         delt=0.02;
 		setbound(u,v,imax,jmax,wW, wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
-        /*printf("seg fault:%f",u[128][128]);*/
-		comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
+		comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
 		comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
 		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
-		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely,iB,jI);
 		t=t+delt;
 		n++;
 		printf("The current t:%f\n",t);
         }else{
             comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
-            /*printf("seg fault:%f\n",u[128][128]);*/
             setbound(u,v,imax,jmax,wW,wE,wN,wS,uin,vin,iB,iC,iD,iG,jI);
             comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re,iB,iC,iD,iG,jI);
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
             poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg,iB,iC,iD,iG,jI);
-            adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+            adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely,iB,jI);
             t=t+delt;
             n++;
             /*printf("The current delt:%f\n",delt);*/
             printf("The current t:%f\n",t);
         }
-
-	}
+    }
     t2=clock();
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
     printf("Time elapsed:%f\n",total_t);
@@ -173,7 +169,7 @@ int main(int argc,char* argv[]){
 
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
-			fprintf(outputu,"%f ",u[j][i]);
+		  fprintf(outputu,"%f ",u[j][i]);
 		}
 		fprintf(outputu,"\n");
 	}
@@ -252,14 +248,14 @@ int main(int argc,char* argv[]){
 	printf("uu into file:%s\n",outputfilenameu1);
 	printf("vv into file:%s\n",outputfilenamev1);
 
-	FREE_RMATRIX(u,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(v,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(p,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(f,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(g,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(rhs,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(uu,0,imax,0,jmax);
-	FREE_RMATRIX(vv,0,imax,0,jmax);
+	FREE_RMATRIX(u,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(v,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(p,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(f,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(g,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(rhs,0,jmax+1,0,imax+1);
+	FREE_RMATRIX(uu,0,jmax,0,imax);
+	FREE_RMATRIX(vv,0,jmax,0,imax);
 	free(xx);
 	free(yy);
     return 0;
