@@ -1,7 +1,11 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 #include "mpi.h"
+#include "compute.h"
 
 int main(int argc,char* argv[]){
-	int opt=0,n=0;
+	int opt=0;
 	char *inputname=NULL;
 	double startTime,endTime;
 
@@ -36,7 +40,7 @@ int main(int argc,char* argv[]){
 
     //Run computation
     startTime = MPI_Wtime();
-    compute(procID,nproc,inputfilename);
+    compute(procID,nproc,inputname);
     endTime = MPI_Wtime();
 
     printf("elapsed time for proc %d: %f\n", procID, endTime - startTime);

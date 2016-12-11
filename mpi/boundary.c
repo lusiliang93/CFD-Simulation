@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "boundary.h"
-void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS,int rid,int cid){
+void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS,int rid,int cid,int iproc,int jproc){
 	int j,i;
 	int us=1;
 	/* changed to fit the dimension */
+	/* may need to change back!!(to do)*/
 	/* west side */
 	if(cid==0){
 		for(j=1;j<jmax+1;j++){ /* is that right?*/

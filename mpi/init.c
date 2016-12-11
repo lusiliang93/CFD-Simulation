@@ -33,8 +33,8 @@ void init_uvp(double **u,double **v,double **p,int imax,int jmax,double UI,doubl
 			u[j][i]=UI;
 		}
 	}
-	for(j=0;j<=jamx+2;j++){
-		for(i=0;i<imax+2){
+	for(j=0;j<=jmax+2;j++){
+		for(i=0;i<imax+2;i++){
 			v[j][i]=VI;
 		}
 	}
