@@ -5,6 +5,7 @@
 #include "compute.h"
 
 int main(int argc,char* argv[]){
+	int nproc,procID;
 	int opt=0;
 	char *inputname=NULL;
 	double startTime,endTime;
