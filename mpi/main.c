@@ -5,7 +5,7 @@
 #include "compute.h"
 
 int main(int argc,char* argv[]){
-	int nproc,procID;
+        int nproc,procID;
 	int opt=0;
 	char *inputname=NULL;
 	double startTime,endTime;
@@ -43,7 +43,7 @@ int main(int argc,char* argv[]){
     startTime = MPI_Wtime();
     compute(procID,nproc,inputname);
     endTime = MPI_Wtime();
-
+    MPI_Finalize();
     printf("elapsed time for proc %d: %f\n", procID, endTime - startTime);
     return 0;
 }

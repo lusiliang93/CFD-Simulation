@@ -33,8 +33,8 @@ if [ ! -f $INPUT_FILE ]; then
     echo "ERROR: Input file $INPUT_FILE does not exist."
     exit $E_BADARGS
 fi
-if [ ! -f "./wire_route" ]; then
-    echo "ERROR: ./wire_route program does not exist."
+if [ ! -f "./mpi" ]; then
+    echo "ERROR: ./mpi program does not exist."
     exit $E_BADARGS
 fi
 

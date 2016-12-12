@@ -31,11 +31,13 @@ void init_uvp(double **u,double **v,double **p,int imax,int jmax,double UI,doubl
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<=imax+2;i++){
 			u[j][i]=UI;
+                //printf("i:%d j:%d\n",i,j);
 		}
 	}
 	for(j=0;j<=jmax+2;j++){
 		for(i=0;i<imax+2;i++){
 			v[j][i]=VI;
+                //printf("i:%d j:%d\n",i,j);
 		}
 	}
 	for(j=0;j<jmax+2;j++){

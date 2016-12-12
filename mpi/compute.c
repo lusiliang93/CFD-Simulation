@@ -76,7 +76,7 @@ void comp_delt(double* delt,int imax,int jmax,double delx,double dely,double **u
 }
 
 int compute(int procID,int nproc,char *inputname){
-	double t=0i,n=0;
+	double t=0,n=0;
 	double xlength,ylength;
 	double tend,tau,itermax,eps,omg,gamma;
 	double Re,GX,GY,UI,VI,PI;
@@ -137,10 +137,10 @@ int compute(int procID,int nproc,char *inputname){
     te=(cid<iproc-1)? procID+1:-1;
     ts=(rid>0)? procID-iproc:-1; //is that right?
     tn=(rid<jproc-1)? procID+iproc:-1;
-    if(tw==-1||te==-1||ts==-1||tn==-1){
-    	printf("Neighboring processor ID is out of bound!");
-    	return -1;
-    }
+    //if(tw==-1||te==-1||ts==-1||tn==-1){
+    //	printf("Neighboring processor ID is out of bound!");
+    //	return -1;
+    //}
     /* allocate memory to specified subdomain */
     /* assign initial values to u,v,p,f,g,rhs,uu,vv*/
     /* why do I need iw,ie,js,jn?*/
@@ -149,10 +149,10 @@ int compute(int procID,int nproc,char *inputname){
     js=jmax/jproc*rid+1;
     jn=jmax/jproc+js-1;
 	u=RMATRIX(js-1,jn+1,iw-2,ie+1);
-	v=RMATRIX(js-2,jn+1,iw-1,ie+1);
+	v=RMATRIX(0,jn+1-(js-2),iw-1,ie+1);
 	p=RMATRIX(js-1,jn+1,iw-1,ie+1);
 	f=RMATRIX(js-1,jn+1,iw-2,ie+1);
-	g=RMATRIX(js-2,jn+1,iw-1,ie+1);
+	g=RMATRIX(0,jn+1-(js-2),iw-1,ie+1);
 	rhs=RMATRIX(js,jn,iw,ie);
 	//uu=RMATRIX(js,jn,iw,ie);
 	//vv=RMATRIX(js,jn,iw,ie);
