@@ -318,7 +318,6 @@ int main(int argc,char* argv[]){
             adap_uv(u,v,f,g,p,delt,delx,dely);
             t=t+delt;
             n++;
-            /*printf("The current delt:%f\n",delt);*/
             printf("The current t:%f\n",t);
         }
 
@@ -327,10 +326,8 @@ int main(int argc,char* argv[]){
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
     printf("Time elapsed:%f\n",total_t);
 
-	outputfilenameu="outputu.txt";
-    outputfilenamev="outputv.txt";
-	outputu = fopen(outputfilenameu,"w+");
-	outputv = fopen(outputfilenamev,"w+");
+	outputu = fopen("outputu.txt","w+");
+	outputv = fopen("outputv.txt","w+");
 
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
@@ -346,8 +343,8 @@ int main(int argc,char* argv[]){
 	}
 	fclose(outputu);
 	fclose(outputv);
-	printf("u into file:%s\n",outputfilenameu);
-	printf("v into file:%s\n",outputfilenamev);
+	printf("u into file\n");
+	printf("v into file\n");
 
 	/* post for visualization*/
 	for(i=0;i<imax+1;i++){
@@ -392,10 +389,8 @@ int main(int argc,char* argv[]){
 		}
 	}
 
-	outputfilenameu1="post_outputu.txt";
-    outputfilenamev1="post_outputv.txt";
-	outputu1 = fopen(outputfilenameu1,"w+");
-	outputv1 = fopen(outputfilenamev1,"w+");
+	outputu1 = fopen("post_outputu.txt","w+");
+	outputv1 = fopen("post_outputv.txt","w+");
 	for(j=0;j<jmax+1;j++){
 		for(i=0;i<imax+1;i++){
 			fprintf(outputu1,"%f ", uu[j*(jmax+1)+i]);
@@ -410,8 +405,8 @@ int main(int argc,char* argv[]){
 	}
 	fclose(outputu1);
 	fclose(outputv1);
-	printf("uu into file:%s\n",outputfilenameu1);
-	printf("vv into file:%s\n",outputfilenamev1);
+	printf("uu into file\n");
+	printf("vv into file\n");
 
 	FREE_RMATRIX(u);
 	FREE_RMATRIX(v);
