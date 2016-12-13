@@ -250,18 +250,9 @@ int main(int argc,char* argv[]){
     FILE *outputv;
     FILE *outputu1;
     FILE *outputv1;
-    char *inputname=NULL;
     clock_t t1,t2;
     double  total_t;
-	/*Read command line arguments*/
-	inputname = "input.txt";
-
-	/* read inputs*/
-	if (inputname==NULL){
-		printf("Inputname is incorrect.\n");
-		return -1;
-	}
-    input = fopen(inputname,"r");
+    input = fopen("input.txt","r");
 	if(!input){
 		printf("Unable to open the file.\n");
 		return -1;
