@@ -250,10 +250,6 @@ int main(int argc,char* argv[]){
     FILE *outputv;
     FILE *outputu1;
     FILE *outputv1;
-    char *outputfilenameu;
-    char *outputfilenamev;
-    char *outputfilenameu1;
-    char *outputfilenamev1;
     char *inputname=NULL;
     clock_t t1,t2;
     double  total_t;
