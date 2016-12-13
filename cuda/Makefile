@@ -20,7 +20,7 @@ NVCC=nvcc
 NVCCFLAGS=-O3 -m64
 
 
-OBJS=$(OBJDIR)/main.o  $(OBJDIR)/cuda_util.o
+OBJS= $(OBJDIR)/cuda_util.o $(OBJDIR)/main.o
 
 
 .PHONY: dirs clean
