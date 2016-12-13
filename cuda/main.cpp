@@ -4,6 +4,9 @@
 #include <limits.h>
 #include <math.h>
 #include <time.h>
+#include <cuda.h>
+#include <cuda_runtime.h>
+#include <driver_functions.h>
 #include "cuda_util.h"
 
 double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
