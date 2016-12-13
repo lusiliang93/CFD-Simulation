@@ -12,7 +12,7 @@
 void cuda_init(int imax, int jmax){
 }
 
-int get_index(int i, int j, int jmax){
+__global__ int get_index(int i, int j, int jmax){
     return (jmax+2)*i + j;
 }
 
