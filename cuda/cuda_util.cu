@@ -52,9 +52,9 @@ void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int 
     cudaMemcpy(cudaDevice_u, u, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
     cudaMemcpy(cudaDevice_v, v, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
     int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
-    setbound_kernel_x<<<nBlocks, THREADSPB>>>(u,v,imax,jmax);
+    setbound_kernel_x<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
     nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;
-    setbound_kernel_y<<<nBlocks, THREADSPB>>>(u,v,imax,jmax);
+    setbound_kernel_y<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
     cudaMemcpy(u, cudaDevice_u2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
     cudaMemcpy(v, cudaDevice_v2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
     return;
