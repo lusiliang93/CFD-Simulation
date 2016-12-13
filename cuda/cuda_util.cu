@@ -12,24 +12,28 @@
 void cuda_init(int imax, int jmax){
 }
 
-__global__ void setbound_kernel_x(double** cudaDevice_u, double** cudaDevice_v, double** cudaDevice_u2, double** cudaDevice_v2, int imax, int jmax){
+int get_index(int i, int j, int jmax){
+    return (jmax+2)*i + j;
+}
+
+__global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx>=1&&idx<jmax+1){
-        cudaDevice_u2[idx][0] = 0;
-        cudaDevice_u2[idx][imax] = 0;
-        cudaDevice_v2[idx][0] = -cudaDevice_v[idx][1];
-        cudaDevice_v2[idx][imax+1] = -cudaDevice_v[idx][imax];
+        cudaDevice_u2[get_index(idx, 0, jmax)] = 0;
+        cudaDevice_u2[get_index(idx, imax, jmax)] = 0;
+        cudaDevice_v2[get_index(idx, 0, jmax)] = -cudaDevice_v[get_index(idx, 1, jmax)];
+        cudaDevice_v2[get_index(idx, imax+1, jmax)] = -cudaDevice_v[get_index(idx, imax, jmax)];
     }
 }
 
-__global__ void setbound_kernel_y(double** cudaDevice_u, double** cudaDevice_v, double** cudaDevice_u2, double** cudaDevice_v2, int imax, int jmax){
+__global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int us = 1;
     if(idx>=1&&idx<imax+1){
-        cudaDevice_v2[0][idx] = 0;
-        cudaDevice_v2[jmax][idx] = 0;
-        cudaDevice_u2[0][idx] = -cudaDevice_u[1][idx];
-        cudaDevice_u2[jmax+1][idx] = 2*us - cudaDevice_u[jmax][idx];
+        cudaDevice_v2[get_index(0, idx, jmax)] = 0;
+        cudaDevice_v2[get_index(jmax, idx, jmax)] = 0;
+        cudaDevice_u2[get_index(0, idx, jmax)] = -cudaDevice_u[get_index(1, idx, jmax)];
+        cudaDevice_u2[get_index(jmax+1, idx, jmax)] = 2*us - cudaDevice_u[get_index(jmax, idx, jmax)];
     }
 }
 
