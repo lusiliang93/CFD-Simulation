@@ -2,21 +2,20 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
-#include "init.h"
-#include "uvp.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <driver_functions.h>
+#include "cuda_util.h"
 
 #define THREADSPB 256
 
 __global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx>=1&&idx<jmax+1){
-        u[idx][0] = 0;
-        u[idx][imax] = 0;
-        v[idx][0] = -v[idx][1];
-        v[idx][imax+1] = -v[idx][imax];
+        cudaDevice_u2[idx][0] = 0;
+        cudaDevice_u2[idx][imax] = 0;
+        cudaDevice_v2[idx][0] = -cudaDevice_v[idx][1];
+        cudaDevice_v2[idx][imax+1] = -cudaDevice_v[idx][imax];
     }
 }
 
@@ -24,17 +23,21 @@ __global__ void setbound_kernel_y(double** u, double** v, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int us = 1;
     if(idx>=1&&idx<imax+1){
-        v[0][idx] = 0;
-        v[jmax][idx] = 0;
-        u[0][idx] = -u[1][idx];
-        u[jmax+1][idx] = 2*us - u[jmax][idx];
+        cudaDevice_v2[0][idx] = 0;
+        cudaDevice_v2[jmax][idx] = 0;
+        cudaDevice_u2[0][idx] = -cudaDevice_u[1][idx];
+        cudaDevice_u2[jmax+1][idx] = 2*us - cudaDevice_u[jmax][idx];
     }
 }
 
 void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS){
-    int nBlocks  = (jmax+1 + THREADSPB-1)/THREADSPB;
+    cudaMemcpy(cudaDevice_u, u, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
+    cudaMemcpy(cudaDevice_v, v, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
+    int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
     setbound_kernel_x<<<nBlocks, THREADSPB>>>(u,v,imax,jmax);
-    nBlocks  = (imax+1 + THREADSPB-1)/THREADSPB;
+    nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;
     setbound_kernel_y<<<nBlocks, THREADSPB>>>(u,v,imax,jmax);
+    cudaMemcpy(u, cudaDevice_u2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
+    cudaMemcpy(v, cudaDevice_v2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
     return;
 }

@@ -6,6 +6,9 @@
 #include <time.h>
 #include "cuda_util.h"
 
+double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
+double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
+
 int read_parameter(char *inputfile){
 	return 0;
 }
@@ -298,18 +301,30 @@ int main(int argc,char* argv[]){
 	yy=(double *)malloc((jmax+1)*sizeof(double));
 	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
     t1=clock();
+    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_u2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs2, (imax+2)*(jmax+2)*sizeof(double));
+
 	while(t<tend){
         if(n==0){
-		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
-        delt=0.02;
-		setbound(u,v,imax,jmax,wW,wE,wN,wS);
-		comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-		comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
-		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
-		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
-		t=t+delt;
-		n++;
-		printf("The current t:%f\n",t);
+	        delt=0.02;
+			setbound(u,v,imax,jmax,wW,wE,wN,wS);
+			comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+			comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
+			poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
+			adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+			t=t+delt;
+			n++;
+			printf("The current t:%f\n",t);
         }else{
             comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
             /*printf("seg fault:%f\n",u[128][128]);*/
