@@ -5,7 +5,7 @@
 #include <math.h>
 #include <time.h>
 #include "init.h"
-#include "boundary.h"
+#include "cuda_util.h"
 #include "uvp.h"
 
 double max(double** u,int imax,int jmax){
