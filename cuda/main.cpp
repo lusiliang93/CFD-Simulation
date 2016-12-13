@@ -6,9 +6,6 @@
 #include <time.h>
 #include "cuda_util.h"
 
-double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
-double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
-
 int read_parameter(char *inputfile){
 	return 0;
 }

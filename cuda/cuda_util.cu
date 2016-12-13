@@ -9,6 +9,9 @@
 
 #define THREADSPB 256
 
+double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
+double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
+
 void cuda_init(int imax, int jmax){
     cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
