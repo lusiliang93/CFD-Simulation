@@ -9,22 +9,7 @@
 
 #define THREADSPB 256
 
-double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
-double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
-
 void cuda_init(int imax, int jmax){
-    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_g, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_rhs, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_u2, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_v2, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_p2, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_f2, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_g2, (imax+2)*(jmax+2)*sizeof(double));
-    cudaMalloc(&cudaDevice_rhs2, (imax+2)*(jmax+2)*sizeof(double));
 }
 
 __global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
@@ -49,6 +34,21 @@ __global__ void setbound_kernel_y(double** u, double** v, int imax, int jmax){
 }
 
 void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS){
+    double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
+    double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
+    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_u2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs2, (imax+2)*(jmax+2)*sizeof(double));
+
     cudaMemcpy(cudaDevice_u, u, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
     cudaMemcpy(cudaDevice_v, v, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
     int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
