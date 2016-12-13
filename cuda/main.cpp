@@ -16,7 +16,6 @@ int read_parameter(char *inputfile){
 
 double *RMATRIX(int nrl,int nrh, int ncl,int nch){
 /* reserve memory for matrix of size [nrl,nrh]x[ncl,nch]*/
-	int i;
 	double* m;
 	m = (double*)malloc((unsigned)(nrh-nrl+1)*(nch-ncl+1)*sizeof(double));
 	if(m==NULL){
@@ -301,7 +300,7 @@ int main(int argc,char* argv[]){
         if(n==0){
 	        delt=0.02;
 	        printf("before setbound\n");
-			setbound(u,v,wW,wE,wN,wS);
+			setbound(u,v,imax,jmax,wW,wE,wN,wS);
 			comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
 			comp_rhs(f, g,rhs,delt,delx,dely);
 			poisson(p,rhs,delx,dely,eps,itermax,omg);
@@ -312,7 +311,7 @@ int main(int argc,char* argv[]){
         }else{
             comp_delt(&delt,delx,dely,u,v,Re,tau);
             printf("before setbound\n");
-            setbound(u,v,wW,wE,wN,wS);
+            setbound(u,v,imax,jmax,wW,wE,wN,wS);
             comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
             comp_rhs(f,g,rhs,delt,delx,dely);
             poisson(p,rhs,delx,dely,eps,itermax,omg);
@@ -385,10 +384,10 @@ int main(int argc,char* argv[]){
 			x1=((ii-1)-0.5)*delx;
 			y2=jj*dely;
 			x2=(ii-0.5)*delx;
-			v1=v[jj-1][ii-1];
-			v2=v[jj-1][ii];
-			v3=v[jj][ii-1];
-			v4=v[jj][ii];
+			v1 = v[get_index(jj-1,ii-1)];
+			v2 = v[get_index(jj-1,ii)];
+			v3 = v[get_index(jj,ii-1)];
+			v4 = v[get_index(jj,ii)];
 			vv[j*(jmax+1)+i] = 1/(delx*dely)*((x2-x)*(y2-y)*v1+(x-x1)*(y2-y)*v2+(x2-x)*(y-y1)*v3+(x-x1)*(y-y1)*v4);
 		}
 	}
