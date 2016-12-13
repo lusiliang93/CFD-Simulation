@@ -12,9 +12,7 @@
 void cuda_init(int imax, int jmax){
 }
 
-__global__ int get_index(int i, int j, int jmax){
-    return (jmax+2)*i + j;
-}
+#define get_index(i,j,jmax) ((jmax+2)*i+j)
 
 __global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
