@@ -12,7 +12,7 @@
 void cuda_init(int imax, int jmax){
 }
 
-__global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
+__global__ void setbound_kernel_x(double** cudaDevice_u, double** cudaDevice_v, double** cudaDevice_u2, double** cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx>=1&&idx<jmax+1){
         cudaDevice_u2[idx][0] = 0;
@@ -22,7 +22,7 @@ __global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
     }
 }
 
-__global__ void setbound_kernel_y(double** u, double** v, int imax, int jmax){
+__global__ void setbound_kernel_y(double** cudaDevice_u, double** cudaDevice_v, double** cudaDevice_u2, double** cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int us = 1;
     if(idx>=1&&idx<imax+1){
