@@ -8,6 +8,8 @@
 #include <cuda_runtime.h>
 #include <driver_functions.h>
 
+#define THREADSPB 256
+
 __global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx>=1&&idx<jmax+1){

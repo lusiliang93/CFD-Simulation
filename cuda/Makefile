@@ -1,7 +1,7 @@
 
 EXECUTABLE := cudaCFD
 
-CU_FILES   := uvp.cu
+CU_FILES   := cuda_util.cu
 
 CU_DEPS    :=
 
@@ -20,7 +20,7 @@ NVCC=nvcc
 NVCCFLAGS=-O3 -m64
 
 
-OBJS=$(OBJDIR)/main.o  $(OBJDIR)/uvp.o
+OBJS=$(OBJDIR)/main.o  $(OBJDIR)/cuda_util.o
 
 
 .PHONY: dirs clean
