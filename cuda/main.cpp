@@ -24,156 +24,10 @@ double *RMATRIX(int nrl,int nrh, int ncl,int nch){
     }
     return m;
 }
-void init_uvp(double *u,double *v,double *p,double UI,double VI,double PI){
-    int i,j;
-    for(j=0;j<jmax+2;j++){
-        for(i=0;i<imax+2;i++){
-            u[get_index(j,i)] = UI;
-            v[get_index(j,i)] = VI;
-            p[get_index(j,i)] = PI;
-        }
-    }
-    return;
-}
 
 void FREE_RMATRIX(double *m){
     free(m);
     return;
-}
-
-void comp_fg(double *u,double *v,double *f,double *g,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
-    int j,i;
-    double a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
-    double ua,ub,uvx,v2y,v2x2,v2y2;
-    for(j=0;j<jmax+2;j++){
-        for(i=0;i<imax+2;i++){
-            f[get_index(j,i)] = 0;
-            g[get_index(j,i)] = 0;
-        }
-    }
-    for(j=1;j<jmax+1;j++){
-        f[get_index(j,0)] = u[get_index(j,0)];
-        f[get_index(j,imax)] = u[get_index(j,imax)];
-    }
-    for(i=1;i<imax+1;i++){
-        g[get_index(0,i)] = v[get_index(0,i)];
-        g[get_index(jmax,i)] = v[get_index(jmax,i)];
-    }
-    for(j=1;j<jmax+1;j++){
-        for(i=1;i<imax;i++){
-            a = u[get_index(j,i)] + u[get_index(j,i+1)];
-            b = u[get_index(j,i-1)] + u[get_index(j,i)];
-            c = u[get_index(j,i)] - u[get_index(j,i+1)];
-            d = u[get_index(j,i-1)] - u[get_index(j,i)];
-            e = u[get_index(j,i)] + u[get_index(j+1,i)];
-            ff = u[get_index(j-1,i)] + u[get_index(j,i)];
-            gg = u[get_index(j,i)] - u[get_index(j+1,i)];
-            h = u[get_index(j-1,i)] - u[get_index(j,i)];
-
-            va = v[get_index(j,i)] + v[get_index(j,i+1)];
-            vb = v[get_index(j-1,i)] + v[get_index(j-1,i+1)];
-
-            u2x = 1/delx*((a/2)*(a/2)-(b/2)*(b/2))+gamma*1/delx*(abs(a)/2*c/2-abs(b)/2*d/2);
-            uvy = 1/dely*(va/2*e/2-vb/2*ff/2)+gamma*1/dely*(abs(va)/2*gg/2-abs(vb)/2*h/2);
-            u2x2 = (u[get_index(j,i+1)] - 2*u[get_index(j,i)] + u[get_index(j,i-1)])/(delx*delx);
-            u2y2 = (u[get_index(j+1,i)] - 2*u[get_index(j,i)] + u[get_index(j-1,i)])/(dely*dely);
-
-            f[get_index(j,i)] = u[get_index(j,i)] + delt*(1/Re*(u2x2+u2y2)-u2x-uvy+gx);
-        }
-    }
-    for(j=1;j<jmax;j++){
-        for(i=1;i<imax+1;i++){
-            a = v[get_index(j,i)] + v[get_index(j,i+1)];
-            b = v[get_index(j,i-1)] + v[get_index(j,i)];
-            c = v[get_index(j,i)] - v[get_index(j,i+1)];
-            d = v[get_index(j,i-1)] - v[get_index(j,i)];
-            e = v[get_index(j,i)] + v[get_index(j+1,i)];
-            ff = v[get_index(j-1,i)] + v[get_index(j,i)];
-            gg = v[get_index(j,i)] - v[get_index(j+1,i)];
-            h = v[get_index(j-1,i)] - v[get_index(j,i)];
-
-            ua = u[get_index(j,i)] + u[get_index(j+1,i)];
-            ub = u[get_index(j,i-1)] + u[get_index(j+1,i-1)];
-
-            uvx = 1/delx*(ua/2*a/2-ub/2*b/2)+gamma*1/delx*(abs(ua)/2*c/2-abs(ub)/2*d/2);
-            v2y = 1/dely*((e/2)*(e/2)-(ff/2)*(ff/2))+gamma*1/dely*(abs(e)/2*gg/2-abs(ff)/2*h/2);
-            v2x2 = (v[get_index(j,i+1)] - 2*v[get_index(j,i)] + v[get_index(j,i-1)])/(delx*delx);
-            v2y2 = (v[get_index(j+1,i)] - 2*v[get_index(j,i)] + v[get_index(j-1,i)])/(dely*dely);
-
-            g[get_index(j,i)] = v[get_index(j,i)] + delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
-        }
-    }
-    return;
-}
-
-void comp_rhs(double *f, double *g,double *rhs,double delt,double delx,double dely){
-    int j,i;
-    for(j=0;j<jmax+2;j++){
-        for(i=0;i<imax+2;i++){
-            rhs[get_index(j,i)] = 0;
-        }
-    }
-    for(j=1;j<jmax+1;j++){
-        for(i=1;i<imax+1;i++){
-            int tmp = (f[get_index(j,i)]-f[get_index(j,i-1)])/delx + (g[get_index(j,i)]-g[get_index(j-1,i)])/dely;
-            rhs[get_index(j,i)] = 1/delt * tmp;
-        }
-    }
-    return;
-}
-
-int poisson(double *p,double *rhs,double delx,double dely,double eps,int itermax,double omg){
-    int it,j,i,eiw,eie,ejs,ejn;
-    double sum;
-    double *r;
-    double res;
-    for(it=0;it<itermax;it++){
-        for(j=1;j<jmax+1;j++){
-            p[get_index(j,0)] = p[get_index(j,1)];
-            p[get_index(j,imax+1)] = p[get_index(j,imax)];
-        }
-        for(i=1;i<imax+1;i++){
-            p[get_index(0,i)] = p[get_index(1,i)];
-            p[get_index(jmax+1,i)] = p[get_index(jmax,i)];
-        }
-        r=RMATRIX(0,jmax+1,0,imax+1);
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                r[get_index(j,i)] = 0;
-            }
-        }
-        sum=0;
-        for(j=1;j<jmax+1;j++){
-            for(i=1;i<imax+1;i++){
-                eiw=1;eie=1;ejs=1;ejn=1;
-                p[get_index(j,i)] = (1-omg)*p[get_index(j,i)]
-                +
-                omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely)) * (
-                    (eie*p[get_index(j,i+1)]+eiw*p[get_index(j,i-1)])/(delx*delx)
-                    +(ejn*p[get_index(j+1,i)]+ejs*p[get_index(j-1,i)])/(dely*dely)
-                    -rhs[get_index(j,i)]
-                );
-
-                r[get_index(j,i)] = (
-                    eie*(p[get_index(j,i+1)]-p[get_index(j,i)])
-                    -eiw*(p[get_index(j,i)]-p[get_index(j,i-1)])
-                    )/(delx*delx)
-                +    (
-                    ejn*(p[get_index(j+1,i)]-p[get_index(j,i)])
-                    -ejs*(p[get_index(j,i)]-p[get_index(j-1,i)])
-                    )/(dely*dely)
-                - rhs[get_index(j,i)];
-                sum += r[get_index(j,i)]*r[get_index(j,i)];
-            }
-        }
-        FREE_RMATRIX(r);
-        res=sqrt(sum/(imax*jmax));
-        if(res<eps){
-            printf("Converged...%f\n",res);
-            break;
-        }
-    }
-    return it;
 }
 
 void adap_uv(double *u,double *v,double *f,double *g,double *p,double delt,double delx,double dely){
@@ -280,17 +134,16 @@ int main(int argc,char* argv[]){
     /* allocate memory to xx, yy*/
     xx=(double *)malloc((imax+1)*sizeof(double));
     yy=(double *)malloc((jmax+1)*sizeof(double));
-    init_uvp(u,v,p,UI,VI,PI);
+    init_uvp(UI,VI,PI);
     t1=clock();
     cuda_init(imax, jmax);
     while(t<tend){
         if(n==0){
             delt=0.02;
-            printf("before setbound\n");
-            setbound(u,v,imax,jmax,wW,wE,wN,wS);
-            comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
-            comp_rhs(f, g,rhs,delt,delx,dely);
-            poisson(p,rhs,delx,dely,eps,itermax,omg);
+            setbound(imax,jmax,wW,wE,wN,wS);
+            comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+            comp_rhs(imax,jmax,rhs,delt,delx,dely);
+            poisson(imax,jmax,delx,dely,eps,itermax,omg);
             adap_uv(u,v,f,g,p,delt,delx,dely);
             t=t+delt;
             n++;
@@ -298,10 +151,10 @@ int main(int argc,char* argv[]){
         }else{
             comp_delt(&delt,delx,dely,u,v,Re,tau);
             printf("before setbound\n");
-            setbound(u,v,imax,jmax,wW,wE,wN,wS);
-            comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
-            comp_rhs(f,g,rhs,delt,delx,dely);
-            poisson(p,rhs,delx,dely,eps,itermax,omg);
+            setbound(imax,jmax,wW,wE,wN,wS);
+            comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+            comp_rhs(imax,jmax,rhs,delt,delx,dely);
+            poisson(imax,jmax,delx,dely,eps,itermax,omg);
             adap_uv(u,v,f,g,p,delt,delx,dely);
             t=t+delt;
             n++;
