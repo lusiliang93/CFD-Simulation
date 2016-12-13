@@ -38,7 +38,7 @@ __global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, do
 void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS){
     double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
     double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
-    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2) *sizeof(double));
     cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
@@ -53,6 +53,7 @@ void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int 
 
     cudaMemcpy(cudaDevice_u, u, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
     cudaMemcpy(cudaDevice_v, v, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyHostToDevice);
+    printf("ijmax: %d %d\n", imax, jmax);
     int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
     setbound_kernel_x<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
     nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;

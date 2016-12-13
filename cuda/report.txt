@@ -1,0 +1,4 @@
+The cuda based parallellization of the serial CFD simulation is done with all the data matrices stored and computed in GPU device memory.
+The main design decision for the cuda implementation is the approximation of the serial algorithm by copy flip. In each iteration, after each step the values of some matrices are updated, but it will be costly to copy the new matrices around. A big saving will be achieved by using the matrices from the previous iteration as an approximation of the new values, which saves a lot of bandwidth. This will result in a slight slow down of converge speed, but the time for each iteration will be significantly shorter. 
+Apart from this, cuda is used to replace most of the costly loops in the serial version by moving the matrice update operations to the GPU cuda threads.
+Necessary synchronization is added during the iteration to ensure correctness.

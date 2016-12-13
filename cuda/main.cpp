@@ -6,214 +6,213 @@
 #include <time.h>
 #include "cuda_util.h"
 
+int imax, jmax;
+
+#define get_index(i,j) ((jmax+2)*i+j)
+
 int read_parameter(char *inputfile){
 	return 0;
 }
-double **RMATRIX(int nrl,int nrh, int ncl,int nch){
-/** reserve memory for matrix of size [nrl,nrh]x[ncl,nch]**/
+
+double *RMATRIX(int nrl,int nrh, int ncl,int nch){
+/* reserve memory for matrix of size [nrl,nrh]x[ncl,nch]*/
 	int i;
-	double **m;
-	/** allocate row pointers **/
-	if((m=(double**)malloc((unsigned)(nrh-nrl+1)*sizeof(double*)))==NULL){
+	double* m;
+	m = (double*)malloc((unsigned)(nrh-nrl+1)*(nch-ncl+1)*sizeof(double));
+	if(m==NULL){
 		printf("no more memory \n");
 		exit(0);
 	}
-	m -= nrl;
-	/** allocate rows and set previously allocated row pointers to point to these**/
-	for (i=nrl;i<=nrh;i++){
-		if((m[i]=(double*)malloc((unsigned)(nch-ncl+1)*sizeof(double)))==NULL){
-			printf("no more memory \n");
-			exit(0);
-		}
-		m[i] -= ncl;
-	}
 	return m;
 }
-void init_uvp(double **u,double **v,double **p,int imax,int jmax,double UI,double VI,double PI){
+void init_uvp(double *u,double *v,double *p,double UI,double VI,double PI){
 	int i,j;
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
-			u[j][i]=UI;
-			v[j][i]=VI;
-			p[j][i]=PI;
+			u[get_index(j,i)] = UI;
+			v[get_index(j,i)] = VI;
+			p[get_index(j,i)] = PI;
 		}
 	}
 	return;
 }
 
-void FREE_RMATRIX(double **m,int nrl,int nrh,int ncl,int nch){
-/** frees memory of matrix allocated by RMATRIX **/
-	int i;
-	for(i=nrh;i>nrl;i--)
-		free((char*)(m[i]+ncl));
-	free((char*)(m+nrl));
+void FREE_RMATRIX(double *m){
+	free(m);
     return;
 }
 
-void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
+void comp_fg(double *u,double *v,double *f,double *g,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
 	int j,i;
 	double a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
 	double ua,ub,uvx,v2y,v2x2,v2y2;
     for(j=0;j<jmax+2;j++){
         for(i=0;i<imax+2;i++){
-            f[j][i]=0;
-            g[j][i]=0;
+        	f[get_index(j,i)] = 0;
+        	g[get_index(j,i)] = 0;
         }
     }
 	for(j=1;j<jmax+1;j++){
-		f[j][0]=u[j][0];
-		f[j][imax]=u[j][imax];
+		f[get_index(j,0)] = u[get_index(j,0)];
+		f[get_index(j,imax)] = u[get_index(j,imax)];
 	}
 	for(i=1;i<imax+1;i++){
-		g[0][i]=v[0][i];
-		g[jmax][i]=v[jmax][i];
+		g[get_index(0,i)] = v[get_index(0,i)];
+		g[get_index(jmax,i)] = v[get_index(jmax,i)];
 	}
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax;i++){
-			a=u[j][i]+u[j][i+1];
-			b=u[j][i-1]+u[j][i];
-			c=u[j][i]-u[j][i+1];
-			d=u[j][i-1]-u[j][i];
-			e=u[j][i]+u[j+1][i];
-			ff=u[j-1][i]+u[j][i];
-			gg=u[j][i]-u[j+1][i];
-			h=u[j-1][i]-u[j][i];
-			va=v[j][i]+v[j][i+1];
-			vb=v[j-1][i]+v[j-1][i+1];
-			u2x=1/delx*((a/2)*(a/2)-(b/2)*(b/2))
-			+gamma*1/delx*(abs(a)/2*c/2-abs(b)/2*d/2);
-			uvy=1/dely*(va/2*e/2-vb/2*ff/2)
-			+gamma*1/dely*(abs(va)/2*gg/2-abs(vb)/2*h/2);
-			u2x2=(u[j][i+1]-2*u[j][i]+u[j][i-1])/(delx*delx);
-			u2y2=(u[j+1][i]-2*u[j][i]+u[j-1][i])/(dely*dely);
-			f[j][i]=u[j][i]+delt*(1/Re*(u2x2+u2y2)-u2x-uvy+gx);
+			a = u[get_index(j,i)] + u[get_index(j,i+1)];
+			b = u[get_index(j,i-1)] + u[get_index(j,i)];
+			c = u[get_index(j,i)] - u[get_index(j,i+1)];
+			d = u[get_index(j,i-1)] - u[get_index(j,i)];
+			e = u[get_index(j,i)] + u[get_index(j+1,i)];
+			ff = u[get_index(j-1,i)] + u[get_index(j,i)];
+			gg = u[get_index(j,i)] - u[get_index(j+1,i)];
+			h = u[get_index(j-1,i)] - u[get_index(j,i)];
+
+			va = v[get_index(j,i)] + v[get_index(j,i+1)];
+			vb = v[get_index(j-1,i)] + v[get_index(j-1,i+1)];
+
+			u2x = 1/delx*((a/2)*(a/2)-(b/2)*(b/2))+gamma*1/delx*(abs(a)/2*c/2-abs(b)/2*d/2);
+			uvy = 1/dely*(va/2*e/2-vb/2*ff/2)+gamma*1/dely*(abs(va)/2*gg/2-abs(vb)/2*h/2);
+			u2x2 = (u[get_index(j,i+1)] - 2*u[get_index(j,i)] + u[get_index(j,i-1)])/(delx*delx);
+			u2y2 = (u[get_index(j+1,i)] - 2*u[get_index(j,i)] + u[get_index(j-1,i)])/(dely*dely);
+
+			f[get_index(j,i)] = u[get_index(j,i)] + delt*(1/Re*(u2x2+u2y2)-u2x-uvy+gx);
 		}
 	}
 	for(j=1;j<jmax;j++){
 		for(i=1;i<imax+1;i++){
-			a=v[j][i]+v[j][i+1];
-			b=v[j][i-1]+v[j][i];
-			c=v[j][i]-v[j][i+1];
-			d=v[j][i-1]-v[j][i];
-			e=v[j][i]+v[j+1][i];
-			ff=v[j-1][i]+v[j][i];
-			gg=v[j][i]-v[j+1][i];
-			h=v[j-1][i]-v[j][i];
-			ua=u[j][i]+u[j+1][i];
-			ub=u[j][i-1]+u[j+1][i-1];
-			uvx=1/delx*(ua/2*a/2-ub/2*b/2)
-			+gamma*1/delx*(abs(ua)/2*c/2-abs(ub)/2*d/2);
-			v2y=1/dely*((e/2)*(e/2)-(ff/2)*(ff/2))
-			+gamma*1/dely*(abs(e)/2*gg/2-abs(ff)/2*h/2);
-			v2x2=(v[j][i+1]-2*v[j][i]+v[j][i-1])/(delx*delx);
-			v2y2=(v[j+1][i]-2*v[j][i]+v[j-1][i])/(dely*dely);
-			g[j][i]=v[j][i]+delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
+			a = v[get_index(j,i)] + v[get_index(j,i+1)];
+			b = v[get_index(j,i-1)] + v[get_index(j,i)];
+			c = v[get_index(j,i)] - v[get_index(j,i+1)];
+			d = v[get_index(j,i-1)] - v[get_index(j,i)];
+			e = v[get_index(j,i)] + v[get_index(j+1,i)];
+			ff = v[get_index(j-1,i)] + v[get_index(j,i)];
+			gg = v[get_index(j,i)] - v[get_index(j+1,i)];
+			h = v[get_index(j-1,i)] - v[get_index(j,i)];
 
+			ua = u[get_index(j,i)] + u[get_index(j+1,i)];
+			ub = u[get_index(j,i-1)] + u[get_index(j+1,i-1)];
+
+			uvx = 1/delx*(ua/2*a/2-ub/2*b/2)+gamma*1/delx*(abs(ua)/2*c/2-abs(ub)/2*d/2);
+			v2y = 1/dely*((e/2)*(e/2)-(ff/2)*(ff/2))+gamma*1/dely*(abs(e)/2*gg/2-abs(ff)/2*h/2);
+			v2x2 = (v[get_index(j,i+1)] - 2*v[get_index(j,i)] + v[get_index(j,i-1)])/(delx*delx);
+			v2y2 = (v[get_index(j+1,i)] - 2*v[get_index(j,i)] + v[get_index(j-1,i)])/(dely*dely);
+
+			g[get_index(j,i)] = v[get_index(j,i)] + delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
 		}
 	}
-    /*printf("test f:%f\n",f[64][64]);
-    printf("test g:%f\n",g[64][64]);*/
 	return;
 }
-void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,double delx,double dely){
+
+void comp_rhs(double *f, double *g,double *rhs,double delt,double delx,double dely){
 	int j,i;
     for(j=0;j<jmax+2;j++){
         for(i=0;i<imax+2;i++){
-            rhs[j][i]=0;
+        	rhs[get_index(j,i)] = 0;
         }
     }
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
-			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
+			int tmp = (f[get_index(j,i)]-f[get_index(j,i-1)])/delx + (g[get_index(j,i)]-g[get_index(j-1,i)])/dely;
+			rhs[get_index(j,i)] = 1/delt * tmp;
         }
     }
-    /*printf("test rhs:%f\n",rhs[32][1]);*/
 	return;
 }
-int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg){
+
+int poisson(double *p,double *rhs,double delx,double dely,double eps,int itermax,double omg){
 	int it,j,i,eiw,eie,ejs,ejn;
     double sum;
-	double **r;
+	double *r;
     double res;
 	for(it=0;it<itermax;it++){
 		for(j=1;j<jmax+1;j++){
-			p[j][0]=p[j][1];
-			p[j][imax+1]=p[j][imax];
+			p[get_index(j,0)] = p[get_index(j,1)];
+			p[get_index(j,imax+1)] = p[get_index(j,imax)];
 		}
 		for(i=1;i<imax+1;i++){
-			p[0][i]=p[1][i];
-			p[jmax+1][i]=p[jmax][i];
+			p[get_index(0,i)] = p[get_index(1,i)];
+			p[get_index(jmax+1,i)] = p[get_index(jmax,i)];
 		}
-		r=RMATRIX(0,jmax+1,0,imax+1); /* Is that right??*/
+		r=RMATRIX(0,jmax+1,0,imax+1);
         for(j=0;j<jmax+2;j++){
             for(i=0;i<imax+2;i++){
-                r[j][i]=0;
+                r[get_index(j,i)] = 0;
             }
         }
         sum=0;
 		for(j=1;j<jmax+1;j++){
 			for(i=1;i<imax+1;i++){
                 eiw=1;eie=1;ejs=1;ejn=1;
-				p[j][i]=(1-omg)*p[j][i]
-				+omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
-				*((eie*p[j][i+1]+eiw*p[j][i-1])/(delx*delx)
-				+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)-rhs[j][i]);
+                p[get_index(j,i)] = (1-omg)*p[get_index(j,i)]
+                +
+                omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely)) * (
+                	(eie*p[get_index(j,i+1)]+eiw*p[get_index(j,i-1)])/(delx*delx)
+                	+(ejn*p[get_index(j+1,i)]+ejs*p[get_index(j-1,i)])/(dely*dely)
+                	-rhs[get_index(j,i)]
+                );
 
-				r[j][i]=(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))/(delx*delx)
-				+(ejn*(p[j+1][i]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
-                sum=sum+r[j][i]*r[j][i];
+                r[get_index(j,i)] = (
+                	eie*(p[get_index(j,i+1)]-p[get_index(j,i)])
+                	-eiw*(p[get_index(j,i)]-p[get_index(j,i-1)])
+                	)/(delx*delx)
+                +	(
+                	ejn*(p[get_index(j+1,i)]-p[get_index(j,i)])
+                	-ejs*(p[get_index(j,i)]-p[get_index(j-1,i)])
+                	)/(dely*dely)
+                - rhs[get_index(j,i)];
+                sum += r[get_index(j,i)]*r[get_index(j,i)];
 			}
 		}
-        FREE_RMATRIX(r,0,jmax+1,0,imax+1);
+        FREE_RMATRIX(r);
         res=sqrt(sum/(imax*jmax));
-        /*printf("res is %f\n",res);*/
         if(res<eps){
             printf("Converged...%f\n",res);
         	break;
         }
 	}
-    /*printf("pressure test:%f\n",p[jmax+2][64]);*/
-    /*printf("number of iteration:%d\n",it);*/
 	return it;
 }
 
-void adap_uv(double **u,double **v,double **f,double **g,double **p,int imax,int jmax,double delt,double delx,double dely){
+void adap_uv(double *u,double *v,double *f,double *g,double *p,double delt,double delx,double dely){
     int i,j;
     for(j=1;j<jmax+1;j++){
     	for(i=1;i<imax;i++){
-    		u[j][i]=f[j][i]-delt/delx*(p[j][i+1]-p[j][i]);
+    		u[get_index(j,i)] = f[get_index(j,i)] - delt/delx*(p[get_index(j,i+1)]-p[get_index(j,i)]);
     	}
     }
     for(j=1;j<jmax;j++){
     	for(i=1;i<imax+1;i++){
-    		v[j][i]=g[j][i]-delt/dely*(p[j+1][i]-p[j][i]);
+    		v[get_index(j,i)] = g[get_index(j,i)] - delt/dely*(p[get_index(j+1,i)]-p[get_index(j,i)]);
     	}
     }
-    /*printf("adap test u:%f\n",u[64][64]);
-    printf("adap test v:%f\n",v[64][64]);*/
 	return;
 }
 
 
-double max(double** u,int imax,int jmax){
+double max(double* u){
 	int i,j;
 	double max=0;
 	for(j=0;j<jmax+1;j++){
 		for(i=0;i<imax+1;i++){
-			if (u[j][i]>max)
-				max=u[j][i];
+			if(u[get_index(j,i)]>max){
+				max = u[get_index(j,i)];
+			}
 		}
 	}
 	return max;
 }
 
-void comp_delt(double* delt,int imax,int jmax,double delx,double dely,double **u,double **v,double Re,double tau){
+void comp_delt(double* delt,double delx,double dely,double *u,double *v,double Re,double tau){
     double first,second,third,min;
 	double delta = 1/(delx*delx)+1/(dely*dely);
 	first = Re/2/delta;
 	min=first;
-	second = delx/abs(max(u,imax,jmax));
-	third= dely/abs(max(v,imax,jmax));
+	second = delx/abs(max(u));
+	third= dely/abs(max(v));
 	if(min>second){
 		min=second;
 		if(min>third)
@@ -233,17 +232,16 @@ int main(int argc,char* argv[]){
 	double xlength,ylength;
 	double tend,tau,itermax,eps,omg,gamma;
 	double Re,GX,GY,UI,VI,PI;
-	int imax,jmax;
 	int wW,wE,wS,wN;
 	double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
-	double **u;
-	double **v;
-	double **p;
-	double **f;
-	double **g;
-	double **rhs;
-	double **uu;
-	double **vv;
+	double *u;
+	double *v;
+	double *p;
+	double *f;
+	double *g;
+	double *rhs;
+	double *uu;
+	double *vv;
 	double *xx;
 	double *yy;
 	double delx,dely,delt;
@@ -296,28 +294,29 @@ int main(int argc,char* argv[]){
 	/* allocate memory to xx, yy*/
 	xx=(double *)malloc((imax+1)*sizeof(double));
 	yy=(double *)malloc((jmax+1)*sizeof(double));
-	init_uvp(u,v,p,imax,jmax,UI,VI,PI);
+	init_uvp(u,v,p,UI,VI,PI);
     t1=clock();
     cuda_init(imax, jmax);
 	while(t<tend){
         if(n==0){
 	        delt=0.02;
-			setbound(u,v,imax,jmax,wW,wE,wN,wS);
-			comp_fg(u,v,f,g, imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-			comp_rhs(f, g,rhs,imax,jmax,delt,delx,dely);
-			poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
-			adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+	        printf("before setbound\n");
+			setbound(u,v,wW,wE,wN,wS);
+			comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
+			comp_rhs(f, g,rhs,delt,delx,dely);
+			poisson(p,rhs,delx,dely,eps,itermax,omg);
+			adap_uv(u,v,f,g,p,delt,delx,dely);
 			t=t+delt;
 			n++;
 			printf("The current t:%f\n",t);
         }else{
-            comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
-            /*printf("seg fault:%f\n",u[128][128]);*/
-            setbound(u,v,imax,jmax,wW,wE,wN,wS);
-            comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
-            poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
-            adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
+            comp_delt(&delt,delx,dely,u,v,Re,tau);
+            printf("before setbound\n");
+            setbound(u,v,wW,wE,wN,wS);
+            comp_fg(u,v,f,g,delt,delx,dely,GX,GY,gamma,Re);
+            comp_rhs(f,g,rhs,delt,delx,dely);
+            poisson(p,rhs,delx,dely,eps,itermax,omg);
+            adap_uv(u,v,f,g,p,delt,delx,dely);
             t=t+delt;
             n++;
             /*printf("The current delt:%f\n",delt);*/
@@ -336,13 +335,13 @@ int main(int argc,char* argv[]){
 
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
-			fprintf(outputu,"%f ",u[j][i]);
+			fprintf(outputu,"%f ", u[get_index(j,i)]);
 		}
 		fprintf(outputu,"\n");
 	}
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<imax+2;i++){
-            fprintf(outputv,"%f ",v[j][i]);
+            fprintf(outputv,"%f ", v[get_index(j,i)]);
 		}
 		fprintf(outputv,"\n");
 	}
@@ -351,7 +350,7 @@ int main(int argc,char* argv[]){
 	printf("u into file:%s\n",outputfilenameu);
 	printf("v into file:%s\n",outputfilenamev);
 
-	/** post for visualization*/
+	/* post for visualization*/
 	for(i=0;i<imax+1;i++){
 		xx[i]=delx*i;
 	}
@@ -368,11 +367,11 @@ int main(int argc,char* argv[]){
 			y1=((jj-1)-0.5)*dely;
 			x2=ii*delx;
 			y2=(jj-1/2)*dely;
-			u1=u[jj-1][ii-1];
-			u2=u[jj-1][ii];
-			u3=u[jj][ii-1];
-			u4=u[jj][ii];
-			uu[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*u1+(x-x1)*(y2-y)*u2+(x2-x)*(y-y1)*u3+(x-x1)*(y-y1)*u4);
+			u1 = u[get_index(jj-1,ii-1)];
+			u2 = u[get_index(jj-1,ii)];
+			u3 = u[get_index(jj,ii-1)];
+			u4 = u[get_index(jj,ii)];
+			uu[j*(jmax+1)+i] = 1/(delx*dely)*((x2-x)*(y2-y)*u1+(x-x1)*(y2-y)*u2+(x2-x)*(y-y1)*u3+(x-x1)*(y-y1)*u4);
 		}
 	}
 	/* vv*/
@@ -390,7 +389,7 @@ int main(int argc,char* argv[]){
 			v2=v[jj-1][ii];
 			v3=v[jj][ii-1];
 			v4=v[jj][ii];
-			vv[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*v1+(x-x1)*(y2-y)*v2+(x2-x)*(y-y1)*v3+(x-x1)*(y-y1)*v4);
+			vv[j*(jmax+1)+i] = 1/(delx*dely)*((x2-x)*(y2-y)*v1+(x-x1)*(y2-y)*v2+(x2-x)*(y-y1)*v3+(x-x1)*(y-y1)*v4);
 		}
 	}
 
@@ -400,13 +399,13 @@ int main(int argc,char* argv[]){
 	outputv1 = fopen(outputfilenamev1,"w+");
 	for(j=0;j<jmax+1;j++){
 		for(i=0;i<imax+1;i++){
-			fprintf(outputu1,"%f ",uu[j][i]);
+			fprintf(outputu1,"%f ", uu[j*(jmax+1)+i]);
 		}
 		fprintf(outputu1,"\n");
 	}
 	for(j=0;j<jmax+1;j++){
 		for(i=0;i<imax+1;i++){
-            fprintf(outputv1,"%f ",vv[j][i]);
+            fprintf(outputv1,"%f ", vv[j*(jmax+1)+i]);
 		}
 		fprintf(outputv1,"\n");
 	}
@@ -415,14 +414,14 @@ int main(int argc,char* argv[]){
 	printf("uu into file:%s\n",outputfilenameu1);
 	printf("vv into file:%s\n",outputfilenamev1);
 
-	FREE_RMATRIX(u,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(v,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(p,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(f,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(g,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(rhs,0,imax+1,0,jmax+1);
-	FREE_RMATRIX(uu,0,imax,0,jmax);
-	FREE_RMATRIX(vv,0,imax,0,jmax);
+	FREE_RMATRIX(u);
+	FREE_RMATRIX(v);
+	FREE_RMATRIX(p);
+	FREE_RMATRIX(f);
+	FREE_RMATRIX(g);
+	FREE_RMATRIX(rhs);
+	FREE_RMATRIX(uu);
+	FREE_RMATRIX(vv);
 	free(xx);
 	free(yy);
     return 0;
