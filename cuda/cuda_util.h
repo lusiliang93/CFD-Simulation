@@ -11,3 +11,4 @@ extern double *cudaDevice_f2;
 extern double *cudaDevice_g2;
 extern double *cudaDevice_rhs2;
 void setbound(double **u,double **v,int imax,int jmax,int wW, int wE,int wN,int wS);
+void cuda_init(int imax, int jmax);

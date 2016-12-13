@@ -9,6 +9,21 @@
 
 #define THREADSPB 256
 
+void cuda_init(int imax, int jmax){
+    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_u2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_v2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_p2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_f2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_g2, (imax+2)*(jmax+2)*sizeof(double));
+    cudaMalloc(&cudaDevice_rhs2, (imax+2)*(jmax+2)*sizeof(double));
+}
+
 __global__ void setbound_kernel_x(double** u, double** v, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if(idx>=1&&idx<jmax+1){
