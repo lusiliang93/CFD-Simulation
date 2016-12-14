@@ -179,6 +179,9 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
         cudaDevice_v[get_index(j,i)] = VI;
         cudaDevice_p[get_index(j,i)] = PI;
     }
+    if(idx==0){
+        printf("init_uvp: %lf %lf %lf\n", cudaDevice_u[0], cudaDevice_v[0], cudaDevice_p[0]);
+    }
 }
 
 void init_uvp(int imax, int jmax,int UI, int VI, int PI){
@@ -190,6 +193,10 @@ __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, d
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int i = idx;
     int j = idx;
+    if(idx==0){
+        printf("comp_fg_kernel_1: %lf %lf %lf\n", cudaDevice_u2[0], cudaDevice_v2[0], cudaDevice_p2[0]);
+        printf("comp_fg_kernel_1: %lf %lf %lf\n", cudaDevice_u[0], cudaDevice_v[0], cudaDevice_p[0]);
+    }
     if(j>=1&&j<jmax+1){
         cudaDevice_f[get_index(j,0)] = cudaDevice_u2[get_index(j,0)];
         cudaDevice_f[get_index(j,imax)] = cudaDevice_u2[get_index(j,imax)];

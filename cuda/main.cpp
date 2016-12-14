@@ -171,8 +171,7 @@ int main(int argc,char* argv[]){
 
     t1=clock();
 	cuda_init(imax, jmax);
-	init_uvp(imax,jmax,UI,VI,PI);    
-    tend = 0.2;
+	init_uvp(imax,jmax,UI,VI,PI);
     while(t<tend){
     	copy_matrix(imax, jmax);
         if(n==0){
