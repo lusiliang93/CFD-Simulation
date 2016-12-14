@@ -300,12 +300,12 @@ __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, do
     int j = idx;
     int i = idx;
     if(j>=1&&j<jmax+1){
-        cudaDevice_p[get_index(j,0)] = cudaDevice_p2[get_index(j,1)];
-        cudaDevice_p[get_index(j,imax+1)] = cudaDevice_p2[get_index(j,imax)];
+        cudaDevice_p[get_index(j,0)] = cudaDevice_p[get_index(j,1)];
+        cudaDevice_p[get_index(j,imax+1)] = cudaDevice_p[get_index(j,imax)];
     }
     if(i>=1&&i<imax+1){
-        cudaDevice_p[get_index(0,i)] = cudaDevice_p2[get_index(1,i)];
-        cudaDevice_p[get_index(jmax+1,i)] = cudaDevice_p2[get_index(jmax,i)];
+        cudaDevice_p[get_index(0,i)] = cudaDevice_p[get_index(1,i)];
+        cudaDevice_p[get_index(jmax+1,i)] = cudaDevice_p[get_index(jmax,i)];
     }
 }
 
@@ -313,7 +313,7 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
     int i = idx%(jmax+2);
-    int eiw,eie,ejs,ejn;
+    double eiw,eie,ejs,ejn;
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
             eiw=1;eie=1;ejs=1;ejn=1;
