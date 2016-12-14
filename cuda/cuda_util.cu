@@ -15,6 +15,7 @@
 #include <thrust/reduce.h>
 #include <thrust/execution_policy.h>
 #include "cublas_v2.h"
+#include <float.h>
 
 #define THREADSPB 256
 #define get_index(i,j) ((jmax+2)*i+j)
@@ -56,7 +57,7 @@ double sum_vector(double* device_p, int length){
 }
 
 __global__ void max_vector(double* device_p, int length, double* double_max){
-    *double_max = -numeric_limits<double>::max();
+    *double_max = -DBL_MAX;
     for(int i=0;i<length;i++){
         if(device_p[i]>*double_max){
             *double_max = device_p[i];
