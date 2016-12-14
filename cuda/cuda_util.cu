@@ -8,6 +8,7 @@
 #include "cuda_util.h"
 #include <thrust/scan.h>
 #include <thrust/device_ptr.h>
+#include <thrust/device_vector.h>
 #include <thrust/device_malloc.h>
 #include <thrust/device_free.h>
 #include <thrust/extrema.h>
