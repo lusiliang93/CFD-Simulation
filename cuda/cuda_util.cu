@@ -29,7 +29,13 @@ __global__ void fill_val(double* p, int length, int val){
 }
 
 __global__ void print_kernel(double* device_p,int imax, int jmax){
-    
+    int i,j;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            printf("%lf ", device_p[get_index(j,i)]);
+        }
+        printf("\n");
+    }
 }
 
 __global__ void sum_kernel(double* device_p, int length, double* device_sum){
