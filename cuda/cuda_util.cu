@@ -41,7 +41,7 @@ double max_vector(double* device_p, int length){
     int max_idx = 0;
     cublasIdamax(handle, length, device_p, 1, &max_idx);
     mymax = device_p[max_idx];
-    return max_idx;
+    return mymax;
 }
 
 void cuda_init(int imax, int jmax){
