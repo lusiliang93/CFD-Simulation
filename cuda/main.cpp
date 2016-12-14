@@ -81,8 +81,7 @@ int main(int argc,char* argv[]){
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             comp_rhs(imax,jmax,delt,delx,dely);
             poisson(imax,jmax,delx,dely,eps,itermax,omg);
-            printf("after poisson\n");
-            // adap_uv(imax,jmax,delt,delx,dely);
+            adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
             printf("The current t:%f\n",t);
@@ -92,13 +91,11 @@ int main(int argc,char* argv[]){
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             comp_rhs(imax,jmax,delt,delx,dely);
             poisson(imax,jmax,delx,dely,eps,itermax,omg);
-            printf("after poisson\n");
-            // adap_uv(imax,jmax,delt,delx,dely);
+            adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
             printf("The current t:%f\n",t);
         }
-
     }
     t2=clock();
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
