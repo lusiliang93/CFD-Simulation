@@ -56,6 +56,10 @@ double max_vector(double* device_p, int length){
     cudaMemcpy(tmp,&(device_p[max_idx]),sizeof(double),cudaMemcpyDeviceToHost);
     mymax = *tmp;
     free(tmp);
+    if(idx==0){
+        printf("max_vector\n");
+        print_matrix(device_p);
+    }
     return mymax;
 }
 
@@ -139,6 +143,15 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     return ret;
 }
 
+__global__ void print_matrix(double* device_p){
+    for(int j=0;i<128;j++){
+        for(int i=0;i<128;i++){
+            printf("%lf ", device_p[get_index(j,i)]);
+        }
+        printf("\n");
+    }
+}
+
 __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx;
@@ -157,7 +170,8 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
         cudaDevice_u[get_index(jmax+1, i)] = 2*us-cudaDevice_u2[get_index(jmax, i)];
     }
     if(idx==0){
-        printf("setbnd test u:%f\n", cudaDevice_u[get_index(jmax+1, 64)]);
+        printf("setbound\n");
+        print_matrix(cudaDevice_u);
     }
 }
 
@@ -181,6 +195,10 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
         cudaDevice_u[get_index(j,i)] = UI;
         cudaDevice_v[get_index(j,i)] = VI;
         cudaDevice_p[get_index(j,i)] = PI;
+    }
+    if(idx==0){
+        printf("init_uvp\n");
+        print_matrix(cudaDevice_u);
     }
 }
 
@@ -248,10 +266,9 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
             cudaDevice_g[get_index(j,i)] = cudaDevice_v2[get_index(j,i)] + delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
         }
     }
-    if(j==64&&i==64){
-        printf("idx: %d %d\n", idx, 64*(jmax+2)+64);
-        printf("test f:%lf\n",cudaDevice_f[64*(jmax+2)+64]);
-        printf("test g:%lf\n",cudaDevice_g[64*(jmax+2)+64]);
+    if(idx==0){
+        printf("comp_fg\n");
+        print_matrix(cudaDevice_f2);
     }
 }
 
@@ -283,6 +300,10 @@ __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, do
             int tmp = (cudaDevice_f2[get_index(j,i)]-cudaDevice_f2[get_index(j,i-1)])/delx + (cudaDevice_g2[get_index(j,i)]-cudaDevice_g2[get_index(j-1,i)])/dely;
             cudaDevice_rhs[get_index(j,i)] = 1/delt * tmp;
         }
+    }
+    if(idx==0){
+        printf("comp_rhs\n");
+        print_matrix(cudaDevice_rhs);
     }
 }
 
@@ -340,6 +361,10 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
 
             cudaDevice_r[get_index(j,i)] = cudaDevice_r[get_index(j,i)]*cudaDevice_r[get_index(j,i)];
         }
+    }
+    if(idx==0){
+        printf("poisson\n");
+        print_matrix(cudaDevice_p);
     }
 }
 
