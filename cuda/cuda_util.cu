@@ -95,6 +95,26 @@ void copy_matrix(int imax, int jmax){
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
 }
 
+void comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
+    double first,second,third,min;
+    double delta = 1/(delx*delx)+1/(dely*dely);
+    first = Re/2/delta;
+    min=first;
+    second = delx/abs(max(u));
+    third= dely/abs(max(v));
+    if(min>second){
+        min=second;
+        if(min>third)
+            min=third;
+    }
+    else{
+        if(min>third)
+            min=third;
+    }
+    *delt=tau*min;
+    return;
+}
+
 __global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx;
