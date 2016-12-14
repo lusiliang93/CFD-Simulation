@@ -43,19 +43,18 @@ extern double *cudaDevice_f2;
 extern double *cudaDevice_g2;
 extern double *cudaDevice_rhs2;
 
-void gen_output(){
+void gen_output(int imax, int jmax, double delx, double dely){
 	double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
-	int i,j;
+	int i,j,ii,jj;
 	double* u=RMATRIX(0,imax+1,0,jmax+1);
 	double* v=RMATRIX(0,imax+1,0,jmax+1);
-	cudaMemcpy(u,cudaDevice_u,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-	cudaMemcpy(v,cudaDevice_v,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+	get_data(u,v,imax,jmax);
 	double* uu=RMATRIX(0,imax,0,jmax);
 	double* vv=RMATRIX(0,imax,0,jmax);
 	double* xx=(double *)malloc((imax+1)*sizeof(double));
 	double* yy=(double *)malloc((jmax+1)*sizeof(double));
-	outputu = fopen("outputu.txt","w+");
-	outputv = fopen("outputv.txt","w+");
+	FILE* outputu = fopen("outputu.txt","w+");
+	FILE* outputv = fopen("outputv.txt","w+");
 	for(j=0;j<jmax+2;j++){
 	    for(i=0;i<imax+2;i++){
 	        fprintf(outputu,"%f ", u[get_index(j,i)]);
@@ -200,6 +199,6 @@ int main(int argc,char* argv[]){
     t2=clock();
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
     printf("Time elapsed:%f\n",total_t);
-    gen_output();
+    gen_output(imax, jmax, delx, dely);
     return 0;
 }

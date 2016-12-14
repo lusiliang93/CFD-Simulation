@@ -375,3 +375,8 @@ void adap_uv(int imax, int jmax, double delt, double delx, double dely){
     int nBlocks = nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
     adap_uv_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_f2, cudaDevice_g2, cudaDevice_p2, imax, jmax, delt, delx, dely);
 }
+
+void get_data(double* u, double* v, int imax, int jmax){
+    cudaMemcpy(u,cudaDevice_u,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v,cudaDevice_v,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+}
