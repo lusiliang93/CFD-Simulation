@@ -273,7 +273,7 @@ __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, do
     int i = idx%(jmax+2);
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
-            int tmp = (cudaDevice_f2[get_index(j,i)]-cudaDevice_f2[get_index(j,i-1)])/delx + (cudaDevice_g2[get_index(j,i)]-cudaDevice_g2[get_index(j-1,i)])/dely;
+            double tmp = (cudaDevice_f2[get_index(j,i)]-cudaDevice_f2[get_index(j,i-1)])/delx + (cudaDevice_g2[get_index(j,i)]-cudaDevice_g2[get_index(j-1,i)])/dely;
             cudaDevice_rhs[get_index(j,i)] = 1/delt * tmp;
         }
     }
