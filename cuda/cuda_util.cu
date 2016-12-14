@@ -387,7 +387,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
             break;
         }
         /* copy p to stale p(p2) */
-        double* tmp_p = cudaDevice_p2;
+        tmp_p = cudaDevice_p2;
         cudaDevice_p2 = cudaDevice_p;
         cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
