@@ -86,7 +86,7 @@ void comp_fg(double **u,double **v,double **f,double **g, int imax,int jmax,doub
 	}
 	return;
 }
-void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,double delx,double dely){
+void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,double delx,double dely,int procID){
 	int j,i;
     // for(j=0;j<jmax+2;j++){
     //     for(i=0;i<imax+2;i++){
@@ -98,14 +98,17 @@ void comp_rhs(double **f, double **g,double **rhs,int imax,int jmax,double delt,
 	for(j=1;j<jmax+1;j++){
 		for(i=1;i<imax+1;i++){
 			rhs[j][i]=1/delt*((f[j][i]-f[j][i-1])/delx+(g[j][i]-g[j-1][i])/dely);
+                        //if(procID==0)
+                          // printf("i:%d j:%d\n",i,j);
+
         }
     }
 	return;
 }
 int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,double eps,int itermax,double omg,int iw,int ie,int js,int jn,
 	int tw,int te,int ts,int tn,int rid,int cid,int iproc,int jproc,int procID,int nproc){
-	int it,j,i,eiw,eie,ejs,ejn,partial_sum,sender;
-    double sum;
+	int it,j,i,eiw,eie,ejs,ejn,flag=1; //int sender
+    double sum,partial_sum;
 	double r;
     double res;
     double *w_s,*e_s,*s_s,*n_s,*w_r,*e_r,*n_r,*s_r;
@@ -118,6 +121,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
     e_r=(double*)malloc(jmax*sizeof(double));
     s_r=(double*)malloc(imax*sizeof(double));
     n_r=(double*)malloc(imax*sizeof(double));
+    //printf("procID:%d\n",procID);
 	for(it=0;it<itermax;it++){ 
 		/* west */
 		if(cid==0){
@@ -143,6 +147,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 	    		p[jmax+1][i]=p[jmax][i];
 	    	}
 	    }
+         //printf("procID:%d\n",procID);
 
         /* subdomain exchange */        
         if(cid!=0){
@@ -150,26 +155,31 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
             for(j=1;j<jmax+1;j++){
                 w_s[j-1]=p[j][1];
             }
-            MPI_Send(&w_s,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
+            MPI_Send(w_s,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
+            //printf("tw:%d procID:%d w_s:%f\n",tw,procID,w_s[0]);
         }
         if(cid!=iproc-1){
             /* receive from the right */
-            MPI_Recv(&e_r,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
+            //printf("correct?\n");
+            MPI_Recv(e_r,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
+           // printf("e_r:%f\n",e_r[0]);
             for(j=1;j<jmax+1;j++){
                 p[j][imax+1]=e_r[j-1];
             }
+            //printf("procID:%d\n",procID);
         }
+        //printf("procID:%d\n",procID);
 
         if(cid!=iproc-1){
             /*send to the right*/
             for(j=1;j<jmax+1;j++){
                 e_s[j-1]=p[j][imax];
             }
-            MPI_Send(&e_s,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
+            MPI_Send(e_s,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
         }
         if(cid !=0){
             /* receive from the left */
-            MPI_Recv(&w_r,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
+            MPI_Recv(w_r,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
             for(j=1;j<jmax+1;j++){
                 p[j][0]=w_r[j-1];
             }
@@ -180,11 +190,11 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
             for(i=1;i<imax+1;i++){
                 n_s[i-1]=p[jmax][i];
             }
-            MPI_Send(&n_s,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
+            MPI_Send(n_s,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
         }
         if(rid!=0){
             /* receive from the bottom*/
-            MPI_Recv(&s_r,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
+            MPI_Recv(s_r,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
             for(i=1;i<imax+1;i++){
                 p[0][i]=s_r[i-1];
             }
@@ -195,11 +205,11 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
             for(i=1;i<imax+1;i++){
                 s_s[i-1]=p[1][i];
             }
-            MPI_Send(&s_s,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
+            MPI_Send(s_s,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
         }
         if(rid!=jproc-1){
             /* receive from the top */
-            MPI_Recv(&n_r,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
+            MPI_Recv(n_r,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
             for(i=1;i<imax+1;i++){
                 p[jmax+1][i]=n_r[i];
             }
@@ -222,21 +232,29 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		if(procID==0){
 			for(i=1;i<nproc;i++){
 				MPI_Recv(&partial_sum,1,MPI_DOUBLE,MPI_ANY_SOURCE,0,MPI_COMM_WORLD,&status);
-				sender=status.MPI_SOURCE;
-				printf("partial sum %d returned from prcessor %d\n",partial_sum,sender);
+				//sender=status.MPI_SOURCE;
+				//printf("partial sum %f returned from prcessor %d\n",partial_sum,sender);
 				sum+=partial_sum;
 			}
 			res=sqrt(sum/(imax*jmax*nproc));
-			MPI_Bcast(&res,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
-			MPI_Bcast(&it,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+                        if(res<eps){
+                           //printf("Converged...%f\n",res);
+                           flag=0;
+                           //MPI_Bcast(&flag,MPI_INT,0,MPI_COMM_WORLD);
+                        }
+			//MPI_Bcast(&res,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
+			//MPI_Bcast(&it,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 		}
 		else 
 			MPI_Send(&sum,1,MPI_DOUBLE,0,0,MPI_COMM_WORLD);
-
-	    if(res<eps){
-	    	printf("Converged...%f\n",res);
-			break;
-		} 
+                MPI_Bcast(&flag,1,MPI_INT,0,MPI_COMM_WORLD);
+                if(flag==0){
+                  break;
+                }
+	   // if(res<eps){
+	    	//printf("Converged...%f\n",res);
+		//	break;
+		//} 
 	}
     free(e_s);
     free(w_s);
@@ -250,12 +268,28 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 }
 
 void adap_uv(double **u,double **v,double **f,double **g,double **p,int imax,int jmax,double delt,double delx,double dely,
-int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
+int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc,int procID){
     int i,j;
     double *v_w_s,*v_e_s,*v_s_s,*v_n_s;
     double *v_w_r,*v_e_r,*v_s_r,*v_n_r;
     double *u_w_s,*u_e_s,*u_s_s,*u_n_s;
     double *u_w_r,*u_e_r,*u_s_r,*u_n_r;
+    v_w_s = (double*)malloc((jmax+1)*sizeof(double));
+    v_e_s = (double*)malloc((jmax+1)*sizeof(double));
+    v_s_s = (double*)malloc(jmax*sizeof(double));
+    v_n_s = (double*)malloc(jmax*sizeof(double));
+    v_w_r = (double*)malloc((jmax+1)*sizeof(double));
+    v_e_r = (double*)malloc((jmax+1)*sizeof(double));
+    v_s_r = (double*)malloc(jmax*sizeof(double));
+    v_n_r = (double*)malloc(jmax*sizeof(double));
+    u_w_s = (double*)malloc(jmax*sizeof(double));
+    u_e_s = (double*)malloc(jmax*sizeof(double));
+    u_s_s = (double*)malloc((jmax+1)*sizeof(double));
+    u_n_s = (double*)malloc((jmax+1)*sizeof(double));
+    u_w_r = (double*)malloc(jmax*sizeof(double));
+    u_e_r = (double*)malloc(jmax*sizeof(double));
+    u_s_r = (double*)malloc((jmax+1)*sizeof(double));
+    u_n_r = (double*)malloc((jmax+1)*sizeof(double));
     MPI_Status status;
     /* changed to fit the dimension*/
     /* change back!!(to do!)*/
@@ -269,6 +303,7 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
     		v[j][i]=g[j][i]-delt/dely*(p[j+1][i]-p[j][i]);
     	}
     }
+    //printf("procID:%d\n",procID);
 
     /* subdomain exchange */
     if(cid!=0){
@@ -279,14 +314,15 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
                 u_w_s[j-1]=u[j][2];
             }
         }
-        MPI_Send(&v_w_s,jmax+1,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
-        MPI_Send(&u_w_s,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
+        MPI_Send(v_w_s,jmax+1,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
+        MPI_Send(u_w_s,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD);
+        //printf("correct?\n");
     }
 
-    if(cid!=jproc-1){
+    if(cid!=iproc-1){
         /* receive from right(east) */
-        MPI_Recv(&v_e_r,jmax+1,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
-        MPI_Recv(&u_e_r,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(v_e_r,jmax+1,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(u_e_r,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD,&status);
         for(j=1;j<jmax+2;j++){
             v[j][imax+1]=v_e_r[j-1];
             if(j<=jmax){
@@ -299,17 +335,18 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
         /* send to east(right) */
         for(j=1;j<jmax+2;j++){
             v_e_s[j-1]=v[j][imax];
-            if(j<=jmax+1){
+            if(j<=jmax){
                 u_e_s[j-1]=u[j][imax]; /* is that right?*/
             }
         }
-        MPI_Send(&v_e_s,jmax+1,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
-        MPI_Send(&u_e_s,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
+        MPI_Send(v_e_s,jmax+1,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
+        MPI_Send(u_e_s,jmax,MPI_DOUBLE,te,0,MPI_COMM_WORLD);
+        //printf("correct?\n");
     }
     if(cid!=0){
         /* receive from the left(west) */
-        MPI_Recv(&v_w_r,jmax+1,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
-        MPI_Recv(&u_w_r,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(v_w_r,jmax+1,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(u_w_r,jmax,MPI_DOUBLE,tw,0,MPI_COMM_WORLD,&status);
         for(j=1;j<jmax+2;j++){
             v[j][0]=v_w_r[j-1];
             if(j<=jmax){
@@ -326,13 +363,13 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
                 v_n_s[i-1]=v[jmax][i];
             }
         }
-        MPI_Send(&u_n_s,imax+1,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
-        MPI_Send(&v_n_s,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
+        MPI_Send(u_n_s,imax+1,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
+        MPI_Send(v_n_s,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD);
     }
     if(rid !=0){
         /* receive from bottom(south) */
-        MPI_Recv(&u_s_r,imax+1,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
-        MPI_Recv(&v_s_r,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(u_s_r,imax+1,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(v_s_r,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD,&status);
         for(i=1;i<imax+2;i++){
             u[0][i]=u_s_r[i-1];
             if(i<=imax){
@@ -349,14 +386,15 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
                 v_s_s[i-1]=v[2][i];
             }
         }
-        MPI_Send(&u_s_s,imax+1,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
-        MPI_Send(&v_s_s,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
+        MPI_Send(u_s_s,imax+1,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
+        MPI_Send(v_s_s,imax,MPI_DOUBLE,ts,0,MPI_COMM_WORLD);
+        //printf("correct?\n");
     }
 
     if(rid!=iproc-1){
         /* receive from the north(top)*/
-        MPI_Recv(&u_n_r,imax+1,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
-        MPI_Recv(&v_n_r,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(u_n_r,imax+1,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
+        MPI_Recv(v_n_r,imax,MPI_DOUBLE,tn,0,MPI_COMM_WORLD,&status);
         for(i=1;i<imax+2;i++){
             u[jmax+1][i]=u_n_r[i-1];
             if(i<=imax){
@@ -364,5 +402,23 @@ int tw,int te,int ts,int tn,int nproc,int rid,int cid,int iproc,int jproc){
             }
         }
     }
+    //printf("procID:%d\n",procID);
+    free(v_w_s);
+    free(v_e_s);
+    free(v_s_s);
+    free(v_n_s);
+    free(v_w_r);
+    free(v_e_r);
+    free(v_s_r);
+    free(v_n_r);
+    free(u_w_s);
+    free(u_e_s);
+    free(u_s_s);
+    free(u_n_s);
+    free(u_w_r);
+    free(u_e_r);
+    free(u_s_r);
+    free(u_n_r);
+    //printf("procID:%d\n",procID);
 	return;
 }

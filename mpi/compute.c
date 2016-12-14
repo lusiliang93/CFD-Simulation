@@ -1,10 +1,7 @@
 /* Questions: 
-Do I need to calculate delt in each processor or just broadcast?
-Will the bcast of delt override sub_delta calculated in each processor? 
-Whether child processor will wait bcast before calculate res?
-Whether child porcessor will wait bcast before return in comp_delt? 
+Do I need to calculate delt in each processor or just broadcast? broadcast
 How to make the use of tag? 
-Is that right to change calculation method for f,g,rhs,init,adap,setbound??*/
+Is that right to change calculation method for f,g,rhs,init,adap,setbound?? Maybe not...*/
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -65,12 +62,14 @@ void comp_delt(double* delt,int imax,int jmax,double delx,double dely,double **u
 	    		min=third;
 	    }
 	    *delt=tau*min;
-		MPI_Bcast(delt,1,MPI_DOUBLE,0,MPI_COMM_WORLD); /* is that right? Will it override delta in each processor?*/
+		//MPI_Bcast(delt,1,MPI_DOUBLE,0,MPI_COMM_WORLD); /* is that right? Will it override delta in each processor?*/
 	} 
 	else {
 		MPI_Send(&maxu,1,MPI_DOUBLE,0,0,MPI_COMM_WORLD);
 		MPI_Send(&maxv,1,MPI_DOUBLE,0,0,MPI_COMM_WORLD);
 	}
+        //Bcast has to be done in each processor!
+        MPI_Bcast(delt,1,MPI_DOUBLE,0,MPI_COMM_WORLD);
 
 	return;
 }
@@ -127,7 +126,7 @@ int compute(int procID,int nproc,char *inputname){
 
 	delx=xlength/imax;
 	dely=ylength/jmax;
-    printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
+    //printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
     
     /* subdomain index */
     rid=procID/jproc; 
@@ -144,22 +143,22 @@ int compute(int procID,int nproc,char *inputname){
     /* allocate memory to specified subdomain */
     /* assign initial values to u,v,p,f,g,rhs,uu,vv*/
     /* why do I need iw,ie,js,jn?*/
-    iw=imax/iproc*cid+1; /* correct? */
-    ie=imax/iproc+iw-1;
+    iw=imax/iproc*cid+1; 
+    ie=imax/iproc+iw-1; 
     js=jmax/jproc*rid+1;
     jn=jmax/jproc+js-1;
-	u=RMATRIX(js-1,jn+1,iw-2,ie+1);
-	v=RMATRIX(0,jn+1-(js-2),iw-1,ie+1);
-	p=RMATRIX(js-1,jn+1,iw-1,ie+1);
-	f=RMATRIX(js-1,jn+1,iw-2,ie+1);
-	g=RMATRIX(0,jn+1-(js-2),iw-1,ie+1);
-	rhs=RMATRIX(js,jn,iw,ie);
+	u=RMATRIX(0,jn+1-(js-1),0,ie+1-(iw-2));
+	v=RMATRIX(0,jn+1-(js-2),0,ie+1-(iw-1));
+	p=RMATRIX(0,jn+1-(js-1),0,ie+1-(iw-1));
+	f=RMATRIX(0,jn+1-(js-1),0,ie+1-(iw-2));
+	g=RMATRIX(0,jn+1-(js-2),0,ie+1-(iw-1));
+	rhs=RMATRIX(0,jn-js+1,0,ie-iw+1);
 	//uu=RMATRIX(js,jn,iw,ie);
 	//vv=RMATRIX(js,jn,iw,ie);
 	/* allocate memory to xx, yy*/
 	//xx=(double *)malloc((imax/iproc+1)*sizeof(double));
-	//yy=(double *)malloc((jmax/jproc+1)*sizeof(double));
-	init_uvp(u,v,p,imax/iproc,jmax/jproc,UI,VI,PI);
+	//yy=(double *)malloc((jmax/jproc+1)*sizeof(double)); 
+        init_uvp(u,v,p,imax/iproc,jmax/jproc,UI,VI,PI,procID);
 
     t1=clock();
 	while(t<tend){
@@ -168,25 +167,26 @@ int compute(int procID,int nproc,char *inputname){
         delt=0.02;
 		setbound(u,v,imax/iproc,jmax/jproc,wW, wE,wN,wS,rid,cid,iproc,jproc);
 		comp_fg(u,v,f,g, imax/iproc,jmax/jproc,delt,delx,dely,GX,GY,gamma,Re,rid,cid,iproc,jproc);
-		comp_rhs(f, g,rhs,imax/iproc,jmax/jproc,delt,delx,dely);
+		comp_rhs(f, g,rhs,imax/iproc,jmax/jproc,delt,delx,dely,procID);
 		/* synchronized */
 		poisson(p,rhs,imax/iproc,jmax/jproc,delx,dely,eps,itermax,omg,iw,ie,js,jn,tw,te,ts,tn,rid,cid,iproc,jproc,procID,nproc);
-		adap_uv(u,v,f,g,p,imax/iproc,jmax/jproc,delt,delx,dely,tw,te,ts,tn,nproc,rid,cid,iproc,jproc);
+		adap_uv(u,v,f,g,p,imax/iproc,jmax/jproc,delt,delx,dely,tw,te,ts,tn,nproc,rid,cid,iproc,jproc,procID);
 		t=t+delt;
 		n++;
-		printf("The current t:%f\n",t);
+		//printf("The current t:%f\n",t);
         }else{
             comp_delt(&delt,imax/iproc,jmax/jproc,delx,dely,u,v,Re,tau,procID,nproc,iproc,jproc);
+            //printf("delt:%f\n",delt);
             setbound(u,v,imax/iproc,jmax/jproc,wW,wE,wN,wS,rid,cid,iproc,jproc);
             comp_fg(u,v,f,g,imax/iproc,jmax/jproc,delt,delx,dely,GX,GY,gamma,Re,rid,cid,iproc,jproc);
-            comp_rhs(f,g,rhs,imax/iproc,jmax/jproc,delt,delx,dely);
+            comp_rhs(f,g,rhs,imax/iproc,jmax/jproc,delt,delx,dely,procID);
             /* synchronized */
             poisson(p,rhs,imax/iproc,jmax/jproc,delx,dely,eps,itermax,omg,iw,ie,js,jn,tw,te,ts,tn,rid,cid,iproc,jproc,procID,nproc);
-            adap_uv(u,v,f,g,p,imax/iproc,jmax/jproc,delt,delx,dely,tw,te,ts,tn,nproc,rid,cid,iproc,jproc);
+            adap_uv(u,v,f,g,p,imax/iproc,jmax/jproc,delt,delx,dely,tw,te,ts,tn,nproc,rid,cid,iproc,jproc,procID);
             t=t+delt;
             n++;
             /*printf("The current delt:%f\n",delt);*/
-            printf("The current t:%f\n",t);
+            //printf("The current t:%f\n",t);
         }
 	}
     t2=clock();

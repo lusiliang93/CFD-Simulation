@@ -25,13 +25,15 @@ double **RMATRIX(int nrl,int nrh, int ncl,int nch){
 	}
 	return m;
 }
-void init_uvp(double **u,double **v,double **p,int imax,int jmax,double UI,double VI,double PI){
+void init_uvp(double **u,double **v,double **p,int imax,int jmax,double UI,double VI,double PI,int procID){
 	/* changed to fit the dimension */
 	int i,j;
 	for(j=0;j<jmax+2;j++){
 		for(i=0;i<=imax+2;i++){
 			u[j][i]=UI;
+                if(procID==3){
                 //printf("i:%d j:%d\n",i,j);
+                }
 		}
 	}
 	for(j=0;j<=jmax+2;j++){
