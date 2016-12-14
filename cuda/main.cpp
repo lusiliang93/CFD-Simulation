@@ -44,6 +44,8 @@ extern double *cudaDevice_g2;
 extern double *cudaDevice_rhs2;
 
 void gen_output(){
+	double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
+	int i,j;
 	double* u=RMATRIX(0,imax+1,0,jmax+1);
 	double* v=RMATRIX(0,imax+1,0,jmax+1);
 	cudaMemcpy(u,cudaDevice_u,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
@@ -54,13 +56,13 @@ void gen_output(){
 	double* yy=(double *)malloc((jmax+1)*sizeof(double));
 	outputu = fopen("outputu.txt","w+");
 	outputv = fopen("outputv.txt","w+");
-	for(int j=0;j<jmax+2;j++){
+	for(j=0;j<jmax+2;j++){
 	    for(i=0;i<imax+2;i++){
 	        fprintf(outputu,"%f ", u[get_index(j,i)]);
 	    }
 	    fprintf(outputu,"\n");
 	}
-	for(int j=0;j<jmax+2;j++){
+	for(j=0;j<jmax+2;j++){
 	    for(i=0;i<imax+2;i++){
 	        fprintf(outputv,"%f ", v[get_index(j,i)]);
 	    }
@@ -114,8 +116,8 @@ void gen_output(){
 	    }
 	}
 
-	outputu1 = fopen("post_outputu.txt","w+");
-	outputv1 = fopen("post_outputv.txt","w+");
+	FILE* outputu1 = fopen("post_outputu.txt","w+");
+	FILE* outputv1 = fopen("post_outputv.txt","w+");
 	for(j=0;j<jmax+1;j++){
 	    for(i=0;i<imax+1;i++){
 	        fprintf(outputu1,"%f ", uu[j*(jmax+1)+i]);
