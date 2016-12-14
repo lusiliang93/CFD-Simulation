@@ -376,6 +376,8 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         // cudaDevice_p2 = cudaDevice_p;
         // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
+        printf("cudaDevice_p\n");
+        print_kernel<<<1,1>>>(cudaDevice_p,imax,jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
