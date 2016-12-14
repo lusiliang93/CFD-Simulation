@@ -29,6 +29,13 @@ __global__ void fill_val(double* p, int length, int val){
 }
 
 __global__ void print_kernel(double* device_p,int imax, int jmax){
+    int i,j;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            printf("%lf ", device_p[get_index(j,i)]);
+        }
+        printf("\n");
+    }
 }
 
 __global__ void sum_kernel(double* device_p, int length, double* device_sum){
@@ -101,37 +108,6 @@ void cuda_init(int imax, int jmax){
 
 /* copy from matrix to matrix 2(matrix 2 is the stale data from last iteration and is  read-only) */
 void copy_matrix(int imax, int jmax){
-    double* tmp_u = cudaDevice_u2;
-    double* tmp_v = cudaDevice_v2;
-    double* tmp_p = cudaDevice_p2;
-    double* tmp_f = cudaDevice_f2;
-    double* tmp_g = cudaDevice_g2;
-    double* tmp_rhs = cudaDevice_rhs2;
-    cudaDevice_u2 = cudaDevice_u;
-    cudaDevice_v2 = cudaDevice_v;
-    cudaDevice_p2 = cudaDevice_p;
-    cudaDevice_f2 = cudaDevice_f;
-    cudaDevice_g2 = cudaDevice_g;
-    cudaDevice_rhs2 = cudaDevice_rhs;
-    cudaDevice_u = tmp_u;
-    cudaDevice_v = tmp_v;
-    cudaDevice_p = tmp_p;
-    cudaDevice_f = tmp_f;
-    cudaDevice_g = tmp_g;
-    cudaDevice_rhs = tmp_rhs;
-    int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u2, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v2, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p2, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f2, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g2, (imax+2)*(jmax+2), 0);
-    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs2, (imax+2)*(jmax+2), 0);
 }
 
 double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
@@ -185,6 +161,7 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     cudaDevice_v = tmp_v;
     cudaThreadSynchronize();
     printf("setbound\n");
+    print_kernel<<<1>>>(cudaDevice_u2,imax,jmax);
     return;
 }
 
@@ -287,6 +264,7 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
 
     cudaThreadSynchronize();
     printf("comp_fg\n");
+    print_kernel<<<1>>>(cudaDevice_f2,imax,jmax);
 }
 
 __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_rhs, int imax, int jmax, double delx, double dely, double delt){
@@ -314,6 +292,7 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
 
     cudaThreadSynchronize();
     printf("comp_rhs\n");
+    print_kernel<<<1>>>(cudaDevice_rhs2,imax,jmax);
 }
 
 __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_r, int imax, int jmax){
@@ -392,6 +371,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
         printf("poisson\n");
+        print_kernel<<<1>>>(cudaDevice_p2,imax,jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
