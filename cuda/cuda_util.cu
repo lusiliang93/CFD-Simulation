@@ -27,6 +27,16 @@ __global__ void fill_val(double* p, int length, int val){
     p[idx] = val;
 }
 
+__global__ void print_kernel(double* device_p,int imax, int jmax){
+    int i,j;
+    for(j=0;j<jmax+2;j++){
+        for(i=0;i<imax+2;i++){
+            printf("%lf ", device_p[get_index(j,i)]);
+        }
+        printf("\n");
+    }
+}
+
 __global__ void sum_kernel(double* device_p, int length, double* device_sum){
     *device_sum = 0;
     for(int i=0;i<length;i++){
@@ -156,16 +166,6 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
         cudaDevice_u[get_index(0, i)] = -cudaDevice_u2[get_index(1, i)];
         cudaDevice_u[get_index(jmax+1, i)] = 2*us-cudaDevice_u2[get_index(jmax, i)];
     }
-    if(idx==0){
-        printf("setbound\n");
-        int i,j;
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                printf("%lf ", cudaDevice_u[get_index(j,i)]);
-            }
-            printf("\n");
-        }
-    }
 }
 
 void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
@@ -177,6 +177,9 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     double* tmp_v = cudaDevice_v2;
     cudaDevice_v2 = cudaDevice_v;
     cudaDevice_v = tmp_v;
+    cudaThreadSynchronize();
+    printf("setbound\n");
+    print_kernel<<<1,1>>>(cudaDevice_u2, imax, jmax);
     return;
 }
 
@@ -189,21 +192,14 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
         cudaDevice_v[get_index(j,i)] = VI;
         cudaDevice_p[get_index(j,i)] = PI;
     }
-    if(idx==0){
-        printf("init_uvp\n");
-        int i,j;
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                printf("%lf ", cudaDevice_u[get_index(j,i)]);
-            }
-            printf("\n");
-        }
-    }
 }
 
 void init_uvp(int imax, int jmax,int UI, int VI, int PI){
     int nBlocks = ((jmax+2)*(imax+2) + THREADSPB-1)/THREADSPB;
     init_uvp_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_p, imax,jmax,UI,VI,PI);
+    cudaThreadSynchronize();
+    printf("init_uvp\n");
+    print_kernel<<<1,1>>>(cudaDevice_u, imax, jmax);
 }
 
 __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax){
@@ -265,16 +261,6 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
             cudaDevice_g[get_index(j,i)] = cudaDevice_v2[get_index(j,i)] + delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
         }
     }
-    if(idx==0){
-        printf("comp_fg\n");
-        int i,j;
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                printf("%lf ", cudaDevice_f[get_index(j,i)]);
-            }
-            printf("\n");
-        }
-    }
 }
 
 void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
@@ -294,6 +280,10 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
     double* tmp_g = cudaDevice_g2;
     cudaDevice_g2 = cudaDevice_g;
     cudaDevice_g = tmp_g;
+
+    cudaThreadSynchronize();
+    printf("comp_fg\n");
+    print_kernel<<<1,1>>>(cudaDevice_f2, imax, jmax);
 }
 
 __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_rhs, int imax, int jmax, double delx, double dely, double delt){
@@ -304,16 +294,6 @@ __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, do
         if(i>=1&&i<imax+1){
             int tmp = (cudaDevice_f2[get_index(j,i)]-cudaDevice_f2[get_index(j,i-1)])/delx + (cudaDevice_g2[get_index(j,i)]-cudaDevice_g2[get_index(j-1,i)])/dely;
             cudaDevice_rhs[get_index(j,i)] = 1/delt * tmp;
-        }
-    }
-    if(idx==0){
-        printf("comp_rhs\n");
-        int i,j;
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                printf("%lf ", cudaDevice_rhs[get_index(j,i)]);
-            }
-            printf("\n");
         }
     }
 }
@@ -328,6 +308,10 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
     double* tmp_rhs = cudaDevice_rhs2;
     cudaDevice_rhs2 = cudaDevice_rhs;
     cudaDevice_rhs = tmp_rhs;
+
+    cudaThreadSynchronize();
+    printf("comp_rhs\n");
+    print_kernel<<<1,1>>>(cudaDevice_rhs2, imax, jmax);
 }
 
 __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_r, int imax, int jmax){
@@ -373,16 +357,6 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
             cudaDevice_r[get_index(j,i)] = cudaDevice_r[get_index(j,i)]*cudaDevice_r[get_index(j,i)];
         }
     }
-    if(idx==0){
-        printf("poisson\n");
-        int i,j;
-        for(j=0;j<jmax+2;j++){
-            for(i=0;i<imax+2;i++){
-                printf("%lf ", cudaDevice_p[get_index(j,i)]);
-            }
-            printf("\n");
-        }
-    }
 }
 
 int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,double omg){
@@ -411,6 +385,9 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         double* tmp_p = cudaDevice_p2;
         cudaDevice_p2 = cudaDevice_p;
         cudaDevice_p = tmp_p;
+        cudaThreadSynchronize();
+        printf("poisson\n");
+        print_kernel<<<1,1>>>(cudaDevice_p2, imax, jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
