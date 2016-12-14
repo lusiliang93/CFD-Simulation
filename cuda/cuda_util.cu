@@ -159,8 +159,8 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     if(idx==0){
         printf("setbound\n");
         int i,j;
-        for(j=0;j<128;j++){
-            for(i=0;i<128;i++){
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
                 printf("%lf ", cudaDevice_u[get_index(j,i)]);
             }
             printf("\n");
@@ -192,8 +192,8 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     if(idx==0){
         printf("init_uvp\n");
         int i,j;
-        for(j=0;j<128;j++){
-            for(i=0;i<128;i++){
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
                 printf("%lf ", cudaDevice_u[get_index(j,i)]);
             }
             printf("\n");
@@ -268,8 +268,8 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
     if(idx==0){
         printf("comp_fg\n");
         int i,j;
-        for(j=0;j<128;j++){
-            for(i=0;i<128;i++){
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
                 printf("%lf ", cudaDevice_f[get_index(j,i)]);
             }
             printf("\n");
@@ -309,8 +309,8 @@ __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, do
     if(idx==0){
         printf("comp_rhs\n");
         int i,j;
-        for(j=0;j<128;j++){
-            for(i=0;i<128;i++){
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
                 printf("%lf ", cudaDevice_rhs[get_index(j,i)]);
             }
             printf("\n");
@@ -376,8 +376,8 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     if(idx==0){
         printf("poisson\n");
         int i,j;
-        for(j=0;j<128;j++){
-            for(i=0;i<128;i++){
+        for(j=0;j<jmax+2;j++){
+            for(i=0;i<imax+2;i++){
                 printf("%lf ", cudaDevice_p[get_index(j,i)]);
             }
             printf("\n");
