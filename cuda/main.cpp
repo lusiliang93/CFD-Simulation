@@ -80,6 +80,7 @@ int main(int argc,char* argv[]){
     	printf("success copy_matrix\n");
     	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
     	printf("check max_vector: %lf\n", max_vector(cudaDevice_u, (imax+2)*(jmax+2)));
+    	printf("check max_vector: %lf\n", max_vector(cudaDevice_u2, (imax+2)*(jmax+2)));
         if(n==0){
             delt=0.02;
             // setbound(imax,jmax,wW,wE,wN,wS);
