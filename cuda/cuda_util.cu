@@ -54,7 +54,7 @@ __global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, do
     }
 }
 
-void setbound(double *u,double *v,int imax,int jmax,int wW, int wE,int wN,int wS){
+void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
     setbound_kernel_x<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
     nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;

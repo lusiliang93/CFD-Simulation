@@ -134,7 +134,7 @@ int main(int argc,char* argv[]){
     /* allocate memory to xx, yy*/
     xx=(double *)malloc((imax+1)*sizeof(double));
     yy=(double *)malloc((jmax+1)*sizeof(double));
-    init_uvp(UI,VI,PI);
+    init_uvp(imax,jmax,UI,VI,PI);
     t1=clock();
     cuda_init(imax, jmax);
     while(t<tend){
@@ -142,7 +142,7 @@ int main(int argc,char* argv[]){
             delt=0.02;
             setbound(imax,jmax,wW,wE,wN,wS);
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            comp_rhs(imax,jmax,rhs,delt,delx,dely);
+            comp_rhs(imax,jmax,delt,delx,dely);
             poisson(imax,jmax,delx,dely,eps,itermax,omg);
             adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
@@ -153,7 +153,7 @@ int main(int argc,char* argv[]){
             printf("before setbound\n");
             setbound(imax,jmax,wW,wE,wN,wS);
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            comp_rhs(imax,jmax,rhs,delt,delx,dely);
+            comp_rhs(imax,jmax,delt,delx,dely);
             poisson(imax,jmax,delx,dely,eps,itermax,omg);
             adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
