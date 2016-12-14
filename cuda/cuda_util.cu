@@ -55,17 +55,23 @@ double sum_vector(double* device_p, int length){
     return sum;
 }
 
+__global__ void max_vector(double* device_p, int length, double* double_max){
+    *double_max = -numeric_limits<double>::max();
+    for(int i=0;i<length;i++){
+        if(device_p[i]>*double_max){
+            *double_max = device_p[i];
+        }
+    }
+}
+
 /* return the max value in vector device_p */
 double max_vector(double* device_p, int length){
-    cublasHandle_t handle;
-    cublasCreate(&handle);
-    double mymax = 0.0;
-    int max_idx = 0;
-    cublasIdamax(handle, length, device_p, 1, &max_idx);
+    double* device_max;
+    cudaMalloc(&device_max, sizeof(double));
+    sum_kernel<<<1, 1>>>(device_p, length, device_max);
     double* tmp = (double*)malloc(sizeof(double));
-    cudaMemcpy(tmp,&(device_p[max_idx]),sizeof(double),cudaMemcpyDeviceToHost);
-    mymax = *tmp;
-    free(tmp);
+    cudaMemcpy(tmp,device_max,sizeof(double),cudaMemcpyDeviceToHost);
+    double mymax = *tmp;
     return mymax;
 }
 
@@ -369,12 +375,15 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
         /* Init of r to 0 can be moved out of the loop */
         fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
+        cudaThreadSynchronize();
 
         nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
         poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
+        cudaThreadSynchronize();
 
         nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
         poisson_kernel_2<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg);
+        cudaThreadSynchronize();
 
         sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
         res=sqrt(sum/(imax*jmax));

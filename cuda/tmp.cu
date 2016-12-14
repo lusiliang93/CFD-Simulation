@@ -1,3 +1,14 @@
+cublasHandle_t handle;
+    cublasCreate(&handle);
+    double mymax = 0.0;
+    int max_idx = 0;
+    cublasIdamax(handle, length, device_p, 1, &max_idx);
+    double* tmp = (double*)malloc(sizeof(double));
+    cudaMemcpy(tmp,&(device_p[max_idx]),sizeof(double),cudaMemcpyDeviceToHost);
+    mymax = *tmp;
+    free(tmp);
+    return mymax;
+
 void CFDCuda(int N, float alpha, float* xarray, float* yarray, float* resultarray) {
 
     int totalBytes = sizeof(float) * 3 * N;
