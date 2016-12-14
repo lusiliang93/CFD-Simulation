@@ -78,26 +78,21 @@ int main(int argc,char* argv[]){
         if(n==0){
             delt=0.02;
             setbound(imax,jmax,wW,wE,wN,wS);
-            printf("after setbound\n");
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            printf("after comp_fg\n");
             comp_rhs(imax,jmax,delt,delx,dely);
-            printf("after comp_rhs\n");
-            // poisson(imax,jmax,delx,dely,eps,itermax,omg);
+            poisson(imax,jmax,delx,dely,eps,itermax,omg);
+            printf("after poisson\n");
             // adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
             printf("The current t:%f\n",t);
         }else{
             delt = comp_delt(imax,jmax,delx,dely,Re,tau);
-            printf("after comp_delt\n");
             setbound(imax,jmax,wW,wE,wN,wS);
-            printf("after setbound\n");
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            printf("after comp_fg\n");
             comp_rhs(imax,jmax,delt,delx,dely);
-            printf("after comp_rhs\n");
-            // poisson(imax,jmax,delx,dely,eps,itermax,omg);
+            poisson(imax,jmax,delx,dely,eps,itermax,omg);
+            printf("after poisson\n");
             // adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
