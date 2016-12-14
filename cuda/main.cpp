@@ -138,6 +138,7 @@ int main(int argc,char* argv[]){
     t1=clock();
     cuda_init(imax, jmax);
     while(t<tend){
+    	copy_matrix(imax, jmax);
         if(n==0){
             delt=0.02;
             setbound(imax,jmax,wW,wE,wN,wS);

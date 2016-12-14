@@ -16,6 +16,26 @@
 
 double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
 double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
+
+__global__ void fill_val(double* p, int length, int val){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    p[idx] = val;
+}
+
+/* sum all the value in vector device_p */
+double sum_vector(double* device_p, int length){
+    thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
+    thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
+    cudaMemcpy(d_input.get(), device_p, length * sizeof(double), 
+               cudaMemcpyHostToHost);
+    thrust::exclusive_scan(d_input, d_input + length, d_output);
+    cudaThreadSynchronize();
+    double sum = d_output[0];
+    thrust::device_free(d_input);
+    thrust::device_free(d_output);
+    return sum;
+}
+
 void cuda_init(int imax, int jmax){
     cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2) *sizeof(double));
     cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
@@ -23,22 +43,66 @@ void cuda_init(int imax, int jmax){
     cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_g, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_rhs, (imax+2)*(jmax+2)*sizeof(double));
+
     cudaMalloc(&cudaDevice_u2, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_v2, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_p2, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_f2, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_g2, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_rhs2, (imax+2)*(jmax+2)*sizeof(double));
+
+    int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs2, (imax+2)*(jmax+2), 0);
+}
+
+/* copy from matrix to matrix 2(matrix 2 is the stale data from last iteration and is  read-only) */
+void copy_matrix(int imax, int jmax){
+    double* tmp_u = cudaDevice_u2;
+    double* tmp_v = cudaDevice_v2;
+    double* tmp_p = cudaDevice_p2;
+    double* tmp_f = cudaDevice_f2;
+    double* tmp_g = cudaDevice_g2;
+    double* tmp_rhs = cudaDevice_rhs2;
+    cudaDevice_u2 = cudaDevice_u;
+    cudaDevice_v2 = cudaDevice_v;
+    cudaDevice_p2 = cudaDevice_p;
+    cudaDevice_f2 = cudaDevice_f;
+    cudaDevice_g2 = cudaDevice_g;
+    cudaDevice_rhs2 = cudaDevice_rhs;
+    cudaDevice_u = tmp_u;
+    cudaDevice_v = tmp_v;
+    cudaDevice_p = tmp_p;
+    cudaDevice_f = tmp_f;
+    cudaDevice_g = tmp_g;
+    cudaDevice_rhs = tmp_rhs;
+    int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
 }
 
 __global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx;
     if(idx>=1&&idx<jmax+1){
-        cudaDevice_u2[get_index(j, 0)] = 0;
-        cudaDevice_u2[get_index(j, imax)] = 0;
-        cudaDevice_v2[get_index(j, 0)] = -cudaDevice_v[get_index(j, 1)];
-        cudaDevice_v2[get_index(j, imax+1)] = -cudaDevice_v[get_index(j, imax)];
+        cudaDevice_u[get_index(j, 0)] = 0;
+        cudaDevice_u[get_index(j, imax)] = 0;
+        cudaDevice_v[get_index(j, 0)] = -cudaDevice_v2[get_index(j, 1)];
+        cudaDevice_v[get_index(j, imax+1)] = -cudaDevice_v2[get_index(j, imax)];
     }
 }
 
@@ -47,10 +111,10 @@ __global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, do
     int i = idx;
     int us = 1;
     if(idx>=1&&idx<imax+1){
-        cudaDevice_v2[get_index(0, i)] = 0;
-        cudaDevice_v2[get_index(jmax, i)] = 0;
-        cudaDevice_u2[get_index(0, i)] = -cudaDevice_u[get_index(1, i)];
-        cudaDevice_u2[get_index(jmax+1, i)] = 2*us - cudaDevice_u[get_index(jmax, i)];
+        cudaDevice_v[get_index(0, i)] = 0;
+        cudaDevice_v[get_index(jmax, i)] = 0;
+        cudaDevice_u[get_index(0, i)] = -cudaDevice_u2[get_index(1, i)];
+        cudaDevice_u[get_index(jmax+1, i)] = 2*us - cudaDevice_u2[get_index(jmax, i)];
     }
 }
 
@@ -59,8 +123,6 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     setbound_kernel_x<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
     nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;
     setbound_kernel_y<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
-    cudaMemcpy(u, cudaDevice_u2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
-    cudaMemcpy(v, cudaDevice_v2, sizeof(double)*(imax+2)*(jmax+2), cudaMemcpyDeviceToHost);
     return;
 }
 
@@ -78,11 +140,6 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
 void init_uvp(int imax, int jmax,int UI, int VI, int PI){
     int nBlocks = ((jmax+2)*(imax+2) + THREADSPB-1)/THREADSPB;
     init_uvp_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_p, imax,jmax,UI,VI,PI);
-}
-
-__global__ void fill_val(double* p, int length, int val){
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    p[idx] = val;
 }
 
 __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax){
@@ -178,19 +235,6 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
     comp_rhs_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_f2, cudaDevice_g2, cudaDevice_rhs, imax, jmax, delx, dely, delt);
 }
 
-double sum_vector(double* device_p, int length){
-    thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
-    thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
-    cudaMemcpy(d_input.get(), device_p, length * sizeof(double), 
-               cudaMemcpyHostToHost);
-    thrust::exclusive_scan(d_input, d_input + length, d_output);
-    cudaThreadSynchronize();
-    double sum = d_output[0];
-    thrust::device_free(d_input);
-    thrust::device_free(d_output);
-    return sum;
-}
-
 __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_r, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx;
@@ -244,6 +288,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
     cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
     for(it=0;it<itermax;it++){
         int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+        /* Init of r to 0 can be moved out of the loop */
         fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
 
         nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
@@ -257,6 +302,10 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         if(res<eps){
             break;
         }
+        /* copy p to stale p(p2) */
+        double* tmp_p = cudaDevice_p2;
+        cudaDevice_p2 = cudaDevice_p;
+        cudaDevice_p = tmp_p;
     }
     cudaFree(cudaDevice_r);
     return it;
