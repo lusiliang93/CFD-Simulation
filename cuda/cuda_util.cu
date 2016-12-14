@@ -261,3 +261,24 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
     cudaFree(cudaDevice_r);
     return it;
 }
+
+__global__ adap_uv_kernel(double* cudaDevice_u, double* cudaDevice_v, double cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_p2, int imax,int jmax,double delt,double delx,double dely){
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = idx/(jmax+2);
+    int i = idx%(jmax+2);
+    if(j>=1&&j<jmax+1){
+        if(i>=1&&i<imax){
+            cudaDevice_u[get_index(j,i)] = cudaDevice_f2[get_index(j,i)]-delt/delx*(cudaDevice_p2[get_index(j,i+1)]-cudaDevice_p2[get_index(j,i)]);
+        }
+    }
+    if(j>=1&&j<jmax){
+        if(i>=1&&i<imax+1){
+            cudaDevice_v[get_index(j,i)] = cudaDevice_g2[get_index(j,i)]-delt/dely*(cudaDevice_p2[get_index(j+1,i)]-cudaDevice_p2[get_index(j,i)]);
+        }
+    }
+}
+
+void adap_uv(int imax, int jmax, double delt, double delx, double dely){
+    int nBlocks = nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    adap_uv_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_f2, cudaDevice_g2, cudaDevice_p2, imax, jmax, delt, delx, dely);
+}
