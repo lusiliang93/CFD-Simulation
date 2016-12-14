@@ -194,8 +194,7 @@ __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, d
     int i = idx;
     int j = idx;
     if(idx==0){
-        printf("comp_fg_kernel_1: %lf %lf %lf\n", cudaDevice_u2[0], cudaDevice_v2[0], cudaDevice_p2[0]);
-        printf("comp_fg_kernel_1: %lf %lf %lf\n", cudaDevice_u[0], cudaDevice_v[0], cudaDevice_p[0]);
+        printf("comp_fg_kernel_1: %lf %lf %lf\n", cudaDevice_u2[0]);
     }
     if(j>=1&&j<jmax+1){
         cudaDevice_f[get_index(j,0)] = cudaDevice_u2[get_index(j,0)];
