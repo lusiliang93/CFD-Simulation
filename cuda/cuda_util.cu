@@ -311,6 +311,7 @@ __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, do
 
 __global__ void poisson_kernel_serial(double* cudaDevice_r, double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_rhs2, int imax, int jmax, double delx, double dely, double omg, int mymod){
     int i,j;
+    int eiw,eie,ejn,ejs;
     for(j=1;j<jmax+1;j++){
         for(i=1;i<imax+1;i++){
             eiw=1;eie=1;ejs=1;ejn=1;
@@ -368,7 +369,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
             break;
         }
         /* copy p to stale p(p2) */
-        tmp_p = cudaDevice_p2;
+        double* tmp_p = cudaDevice_p2;
         cudaDevice_p2 = cudaDevice_p;
         cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
