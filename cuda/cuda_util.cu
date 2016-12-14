@@ -35,7 +35,8 @@ double sum_vector(double* device_p, int length){
 double max_vector(double* device_p, int length){
     thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
     double mymax = 0.0;
-    // double mymax = *(thrust::max_element(d_ptr, d_ptr + length));
+    thrust::device_vector<double>::iterator iter = thrust::max_element(d_ptr, d_ptr + length);
+    // double mymax = *();
     return mymax;
 }
 
