@@ -22,6 +22,15 @@
 double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
 double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
 
+__global__ void print_matrix(double* device_p){
+    for(int j=0;i<128;j++){
+        for(int i=0;i<128;i++){
+            printf("%lf ", device_p[get_index(j,i)]);
+        }
+        printf("\n");
+    }
+}
+
 __global__ void fill_val(double* p, int length, int val){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     p[idx] = val;
@@ -141,15 +150,6 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     }
     double ret = tau*min;
     return ret;
-}
-
-__global__ void print_matrix(double* device_p){
-    for(int j=0;i<128;j++){
-        for(int i=0;i<128;i++){
-            printf("%lf ", device_p[get_index(j,i)]);
-        }
-        printf("\n");
-    }
 }
 
 __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
