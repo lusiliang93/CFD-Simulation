@@ -97,13 +97,14 @@ void copy_matrix(int imax, int jmax){
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
 }
 
-void comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
+double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
     double first,second,third,min;
     double delta = 1/(delx*delx)+1/(dely*dely);
     first = Re/2/delta;
     min=first;
-    second = delx/abs(max_vector(cudaDevice_u2));
-    third= dely/abs(max_vector(cudaDevice_v2));
+    int length = (imax+2)*(jmax+2);
+    second = delx/abs(max_vector(cudaDevice_u2, length));
+    third= dely/abs(max_vector(cudaDevice_v2, length));
     if(min>second){
         min=second;
         if(min>third)
