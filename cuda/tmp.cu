@@ -1,3 +1,51 @@
+int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,double omg){
+    int it;
+    double sum;
+    double res;
+    double* cudaDevice_r;
+    cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
+    for(it=0;it<itermax;it++){
+        int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+        /* Init of r to 0 can be moved out of the loop */
+        fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
+        cudaThreadSynchronize();
+
+        nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
+        poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
+        cudaThreadSynchronize();
+
+        // odd pass
+        nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+        poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
+        cudaThreadSynchronize();
+
+        // odd even relaxation
+        double* tmp_p = cudaDevice_p2;
+        cudaDevice_p2 = cudaDevice_p;
+        cudaDevice_p = tmp_p;
+
+        // even pass
+        nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+        poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 0);
+        cudaThreadSynchronize();
+
+        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        res=sqrt(sum/(imax*jmax));
+        if(res<eps){
+            break;
+        }
+        /* copy p to stale p(p2) */
+        tmp_p = cudaDevice_p2;
+        cudaDevice_p2 = cudaDevice_p;
+        cudaDevice_p = tmp_p;
+        cudaThreadSynchronize();
+        printf("cudaDevice_p\n");
+        print_kernel<<<1,1>>>(cudaDevice_p2,imax,jmax);
+    }
+    cudaFree(cudaDevice_r);
+    return it;
+}
+
 __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_rhs2, int imax, int jmax, double delx, double dely, double omg){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
