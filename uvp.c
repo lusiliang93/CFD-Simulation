@@ -125,6 +125,13 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
             printf("Converged...%f\n",res);
         	break;
         }
+        printf("poisson\n");
+        for(j=0;j<jmax+2;j++){
+        	for(i=0;i<imax+2;i++){
+        		printf("%lf \n", p[j][i]);
+        	}
+        	printf(" \n");
+        }
 	}
     /*printf("pressure test:%f\n",p[jmax+2][64]);*/
     /*printf("number of iteration:%d\n",it);*/
