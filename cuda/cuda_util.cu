@@ -317,16 +317,15 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
             eiw=1;eie=1;ejs=1;ejn=1;
-            cudaDevice_p[get_index(j,i)] = 
-            (1-omg)*cudaDevice_p[get_index(j,i)]
-            +
-            omg/
-            ((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
-                * (
+            double a1 = (1-omg)*cudaDevice_p[get_index(j,i)];
+            double a2 = omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely));
+            double a3 = (
                 (eie*cudaDevice_p[get_index(j,i+1)]+eiw*cudaDevice_p[get_index(j,i-1)])/(delx*delx)
                 +(ejn*cudaDevice_p[get_index(j+1,i)]+ejs*cudaDevice_p[get_index(j-1,i)])/(dely*dely)
                 -cudaDevice_rhs2[get_index(j,i)]
             );
+            cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
+            printf("%d %d %d %d %lf %lf %lf\n", j,i,idx,(get_index(j,i)),a1,a2,a3);
 
             cudaDevice_r[get_index(j,i)] = (
                 eie*(cudaDevice_p[get_index(j,i+1)]-cudaDevice_p[get_index(j,i)])
@@ -355,6 +354,9 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         /* Init of r to 0 can be moved out of the loop */
         fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
         cudaThreadSynchronize();
+
+        printf("poisson before \n");
+        print_kernel<<<1,1>>>(cudaDevice_p,imax,jmax);
 
         nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
         poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
