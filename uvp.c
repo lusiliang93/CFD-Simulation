@@ -115,11 +115,15 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 						(eie+eiw)/(delx*delx)
 						+(ejn+ejs)/(dely*dely)
 					);
-				double a4 = (eie*p[j][i+1]+eiw*p[j][i-1])/(delx*delx);
-				double a5 = (ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely);
+				double aa1 = eie*p[j][i+1];
+				double aa2 = eiw*p[j][i-1];
+				double a4 = (aa1+aa2)/(delx*delx);
+				double aa3 = ejn*p[j+1][i];
+				double aa4 = ejs*p[j-1][i];
+				double a5 = (aa3+aa4)/(dely*dely);
 				double a6 = rhs[j][i];
 				double a3 = (a4+a5-a6);
-				printf("%d %d %lf %lf %lf %lf %lf %lf\n", j,i,a1,a2,a3,a4,a5,a6);
+				printf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", j,i,a1,a2,a3,a4,a5,a6,aa1,aa2,aa3,aa4);
 				p[j][i]=a1+a2*a3;
 
 				r[j][i]=
