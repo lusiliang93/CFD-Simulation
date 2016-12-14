@@ -76,7 +76,9 @@ int main(int argc,char* argv[]){
             n++;
             printf("The current t:%f\n",t);
         }else{
+        	printf("defore comp_delt\n");
             delt = comp_delt(imax,jmax,delx,dely,Re,tau);
+            printf("after comp_delt\n");
             // setbound(imax,jmax,wW,wE,wN,wS);
             // comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             // comp_rhs(imax,jmax,delt,delx,dely);
