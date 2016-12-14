@@ -118,29 +118,8 @@ int main(int argc,char* argv[]){
 		/*comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau); */
         delt=0.02;
 		setbound(u,v,imax,jmax,wW,wE,wN,wS);
-		printf("setbound\n");
-		for(j=0;j<jmax+2;j++){
-			for(i=0;i<imax+2;i++){
-				printf("%lf ", u[j][i]);
-			}
-			printf(" \n");
-		}
 		comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-		printf("comp_fg\n");
-		for(j=0;j<jmax+2;j++){
-			for(i=0;i<imax+2;i++){
-				printf("%lf ", f[j][i]);
-			}
-			printf(" \n");
-		}
 		comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
-		printf("comp_rhs\n");
-		for(j=0;j<jmax+2;j++){
-			for(i=0;i<imax+2;i++){
-				printf("%lf ", rhs[j][i]);
-			}
-			printf(" \n");
-		}
 		poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
 		adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
 		t=t+delt;
@@ -150,29 +129,8 @@ int main(int argc,char* argv[]){
             comp_delt(&delt,imax,jmax,delx,dely,u,v,Re,tau);
             /*printf("seg fault:%f\n",u[128][128]);*/
             setbound(u,v,imax,jmax,wW,wE,wN,wS);
-            printf("setbound\n");
-            for(j=0;j<jmax+2;j++){
-            	for(i=0;i<imax+2;i++){
-            		printf("%lf ", u[j][i]);
-            	}
-            	printf(" \n");
-            }
             comp_fg(u,v,f,g,imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            printf("comp_fg\n");
-            for(j=0;j<jmax+2;j++){
-            	for(i=0;i<imax+2;i++){
-            		printf("%lf ", f[j][i]);
-            	}
-            	printf(" \n");
-            }
             comp_rhs(f,g,rhs,imax,jmax,delt,delx,dely);
-            printf("comp_rhs\n");
-            for(j=0;j<jmax+2;j++){
-            	for(i=0;i<imax+2;i++){
-            		printf("%lf ", rhs[j][i]);
-            	}
-            	printf(" \n");
-            }
             poisson(p,rhs,imax,jmax,delx,dely,eps,itermax,omg);
             adap_uv(u,v,f,g,p,imax,jmax,delt,delx,dely);
             t=t+delt;

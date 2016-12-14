@@ -32,9 +32,9 @@ __global__ void print_kernel(double* device_p,int imax, int jmax){
     int i,j;
     for(j=0;j<jmax+2;j++){
         for(i=0;i<imax+2;i++){
-            printf("%lf ", device_p[get_index(j,i)]);
+            // printf("%lf ", device_p[get_index(j,i)]);
         }
-        printf("\n");
+        // printf("\n");
     }
 }
 
@@ -160,7 +160,6 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     cudaDevice_v2 = cudaDevice_v;
     cudaDevice_v = tmp_v;
     cudaThreadSynchronize();
-    printf("setbound\n");
     print_kernel<<<1,1>>>(cudaDevice_u2,imax,jmax);
     return;
 }
@@ -180,7 +179,6 @@ void init_uvp(int imax, int jmax,int UI, int VI, int PI){
     int nBlocks = ((jmax+2)*(imax+2) + THREADSPB-1)/THREADSPB;
     init_uvp_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_p, imax,jmax,UI,VI,PI);
     cudaThreadSynchronize();
-    printf("init_uvp\n");
 }
 
 __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax){
@@ -263,7 +261,6 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
     cudaDevice_g = tmp_g;
 
     cudaThreadSynchronize();
-    printf("comp_fg\n");
     print_kernel<<<1,1>>>(cudaDevice_f2,imax,jmax);
 }
 
@@ -291,7 +288,6 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
     cudaDevice_rhs = tmp_rhs;
 
     cudaThreadSynchronize();
-    printf("comp_rhs\n");
     print_kernel<<<1,1>>>(cudaDevice_rhs2,imax,jmax);
 }
 
@@ -326,8 +322,6 @@ __global__ void poisson_kernel_serial(double* cudaDevice_r, double* cudaDevice_p
             double a6 = cudaDevice_rhs2[get_index(j,i)];
             double a3 = (a4+a5-a6);
             cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
-            
-            printf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", j,i,a1,a2,a3,a4,a5,a6,aa1,aa2,aa3,aa4);
 
             cudaDevice_r[get_index(j,i)] = (
                 eie*(cudaDevice_p[get_index(j,i+1)]-cudaDevice_p[get_index(j,i)])
@@ -375,7 +369,6 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         // cudaDevice_p2 = cudaDevice_p;
         // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
-        printf("cudaDevice_p\n");
         print_kernel<<<1,1>>>(cudaDevice_p,imax,jmax);
     }
     cudaFree(cudaDevice_r);
