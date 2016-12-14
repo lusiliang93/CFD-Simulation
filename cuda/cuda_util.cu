@@ -309,39 +309,43 @@ __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, do
     }
 }
 
-__global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_rhs2, int imax, int jmax, double delx, double dely, double omg){
+__global__ void poisson_kernel_odd_even(double* cudaDevice_r, double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_rhs2, int imax, int jmax, double delx, double dely, double omg, int mymod){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
     int i = idx%(jmax+2);
     double eiw,eie,ejs,ejn;
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
-            eiw=1;eie=1;ejs=1;ejn=1;
-            double a1 = (1-omg)*cudaDevice_p2[get_index(j,i)];
-            double a2 = omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely));
-            double aa1 = eie*cudaDevice_p2[get_index(j,i+1)];
-            double aa2 = eiw*cudaDevice_p2[get_index(j,i-1)];
-            double a4 = (aa1+aa2)/(delx*delx);
-            double aa3 = ejn*cudaDevice_p2[get_index(j+1,i)];
-            double aa4 = ejs*cudaDevice_p2[get_index(j-1,i)];
-            double a5 = (aa3+aa4)/(dely*dely);
-            double a6 = cudaDevice_rhs2[get_index(j,i)];
-            double a3 = (a4+a5-a6);
-            cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
-            
-            // printf("%d %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", j,i,idx,(get_index(j,i)),a1,a2,a3,a4,a5,a6,aa1,aa2,aa3,aa4);
+            if(idx%2==mymod){
+                eiw=1;eie=1;ejs=1;ejn=1;
+                double a1 = (1-omg)*cudaDevice_p2[get_index(j,i)];
+                double a2 = omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely));
+                double aa1 = eie*cudaDevice_p2[get_index(j,i+1)];
+                double aa2 = eiw*cudaDevice_p2[get_index(j,i-1)];
+                double a4 = (aa1+aa2)/(delx*delx);
+                double aa3 = ejn*cudaDevice_p2[get_index(j+1,i)];
+                double aa4 = ejs*cudaDevice_p2[get_index(j-1,i)];
+                double a5 = (aa3+aa4)/(dely*dely);
+                double a6 = cudaDevice_rhs2[get_index(j,i)];
+                double a3 = (a4+a5-a6);
+                cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
+                
+                // printf("%d %d %d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", j,i,idx,(get_index(j,i)),a1,a2,a3,a4,a5,a6,aa1,aa2,aa3,aa4);
 
-            cudaDevice_r[get_index(j,i)] = (
-                eie*(cudaDevice_p2[get_index(j,i+1)]-cudaDevice_p2[get_index(j,i)])
-                -eiw*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j,i-1)])
-                )/(delx*delx)
-            +    (
-                ejn*(cudaDevice_p2[get_index(j+1,i)]-cudaDevice_p2[get_index(j,i)])
-                -ejs*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j-1,i)])
-                )/(dely*dely)
-            - cudaDevice_rhs2[get_index(j,i)];
+                cudaDevice_r[get_index(j,i)] = (
+                    eie*(cudaDevice_p2[get_index(j,i+1)]-cudaDevice_p2[get_index(j,i)])
+                    -eiw*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j,i-1)])
+                    )/(delx*delx)
+                +    (
+                    ejn*(cudaDevice_p2[get_index(j+1,i)]-cudaDevice_p2[get_index(j,i)])
+                    -ejs*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j-1,i)])
+                    )/(dely*dely)
+                - cudaDevice_rhs2[get_index(j,i)];
 
-            cudaDevice_r[get_index(j,i)] = cudaDevice_r[get_index(j,i)]*cudaDevice_r[get_index(j,i)];
+                cudaDevice_r[get_index(j,i)] = cudaDevice_r[get_index(j,i)]*cudaDevice_r[get_index(j,i)];
+            }else{
+                cudaDevice_p[get_index(j,i)] = cudaDevice_p2[get_index(j,i)];
+            }
         }
     }
 }
@@ -362,8 +366,19 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
         cudaThreadSynchronize();
 
+        // odd pass
         nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-        poisson_kernel_2<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg);
+        poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
+        cudaThreadSynchronize();
+
+        // odd even relaxation
+        double* tmp_p = cudaDevice_p2;
+        cudaDevice_p2 = cudaDevice_p;
+        cudaDevice_p = tmp_p;
+
+        // even pass
+        nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+        poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 0);
         cudaThreadSynchronize();
 
         sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
