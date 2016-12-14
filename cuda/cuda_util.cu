@@ -40,7 +40,7 @@ double max_vector(double* device_p, int length){
     double mymax = 0.0;
     int max_idx = 0;
     cublasIdamax(handle, length, device_p, 1, &max_idx);
-    mymax = device_p[max_idx];
+    // mymax = device_p[max_idx];
     return mymax;
 }
 

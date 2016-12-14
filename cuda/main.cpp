@@ -76,9 +76,10 @@ int main(int argc,char* argv[]){
     cuda_init(imax, jmax);
     printf("success cuda_init\n");
     while(t<tend){
-    	copy_matrix(imax, jmax);
-    	printf("success copy_matrix\n");
     	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
+    	copy_matrix(imax, jmax);
+    	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
+    	printf("success copy_matrix\n");
     	printf("check max_vector: %lf\n", max_vector(cudaDevice_u, (imax+2)*(jmax+2)));
     	printf("check max_vector: %lf\n", max_vector(cudaDevice_u, (imax+2)*(jmax+2)));
         if(n==0){
