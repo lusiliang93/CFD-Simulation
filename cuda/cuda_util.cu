@@ -319,13 +319,12 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
             eiw=1;eie=1;ejs=1;ejn=1;
             double a1 = (1-omg)*cudaDevice_p[get_index(j,i)];
             double a2 = omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely));
-            double a3 = (
-                (eie*cudaDevice_p[get_index(j,i+1)]+eiw*cudaDevice_p[get_index(j,i-1)])/(delx*delx)
-                +(ejn*cudaDevice_p[get_index(j+1,i)]+ejs*cudaDevice_p[get_index(j-1,i)])/(dely*dely)
-                -cudaDevice_rhs2[get_index(j,i)]
-            );
+            double a4 = (eie*cudaDevice_p[get_index(j,i+1)]+eiw*cudaDevice_p[get_index(j,i-1)])/(delx*delx);
+            double a5 = (ejn*cudaDevice_p[get_index(j+1,i)]+ejs*cudaDevice_p[get_index(j-1,i)])/(dely*dely);
+            double a6 = cudaDevice_rhs2[get_index(j,i)];
+            double a3 = (a4+a5-a6);
             cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
-            printf("%d %d %d %d %lf %lf %lf\n", j,i,idx,(get_index(j,i)),a1,a2,a3);
+            printf("%d %d %d %d %lf %lf %lf %lf %lf %lf\n", j,i,idx,(get_index(j,i)),a1,a2,a3,a4,a5,a6);
 
             cudaDevice_r[get_index(j,i)] = (
                 eie*(cudaDevice_p[get_index(j,i+1)]-cudaDevice_p[get_index(j,i)])
