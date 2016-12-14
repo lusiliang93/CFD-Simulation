@@ -30,6 +30,19 @@ void FREE_RMATRIX(double *m){
     return;
 }
 
+extern double *cudaDevice_u;
+extern double *cudaDevice_v;
+extern double *cudaDevice_p;
+extern double *cudaDevice_f;
+extern double *cudaDevice_g;
+extern double *cudaDevice_rhs;
+extern double *cudaDevice_u2;
+extern double *cudaDevice_v2;
+extern double *cudaDevice_p2;
+extern double *cudaDevice_f2;
+extern double *cudaDevice_g2;
+extern double *cudaDevice_rhs2;
+
 int main(int argc,char* argv[]){
     int n=0;
     double t=0;

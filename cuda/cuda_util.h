@@ -1,3 +1,5 @@
+
+
 void cuda_init(int imax, int jmax);
 void copy_matrix(int imax, int jmax);
 
