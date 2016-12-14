@@ -317,7 +317,8 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
             eiw=1;eie=1;ejs=1;ejn=1;
-            cudaDevice_p[get_index(j,i)] = (1-omg)*cudaDevice_p[get_index(j,i)]
+            cudaDevice_p[get_index(j,i)] = 
+            (1-omg)*cudaDevice_p[get_index(j,i)]
             +
             omg/
             ((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
@@ -348,6 +349,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
     double res;
     double* cudaDevice_r;
     cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
+    printf("%lf %lf %lf\n", omg, delx, dely);
     for(it=0;it<itermax;it++){
         int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
         /* Init of r to 0 can be moved out of the loop */

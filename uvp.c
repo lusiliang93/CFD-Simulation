@@ -89,6 +89,7 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
     double sum;
 	double **r;
     double res;
+    printf("%lf %lf %lf\n", omg, delx, dely);
 	for(it=0;it<itermax;it++){
 		for(j=1;j<jmax+1;j++){
 			p[j][0]=p[j][1];
@@ -108,7 +109,8 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 		for(j=1;j<jmax+1;j++){
 			for(i=1;i<imax+1;i++){
                 eiw=1;eie=1;ejs=1;ejn=1;
-				p[j][i]=(1-omg)*p[j][i]
+				p[j][i]=
+				(1-omg)*p[j][i]
 				+ omg/
 					(
 						(eie+eiw)/(delx*delx)
