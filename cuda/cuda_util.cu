@@ -22,9 +22,10 @@
 double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
 double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
 
-__global__ void print_matrix(double* device_p){
-    for(int j=0;i<128;j++){
-        for(int i=0;i<128;i++){
+__global__ void print_matrix(double* device_p, int imax, int jmax){
+    int i, j;
+    for(j=0;i<128;j++){
+        for(i=0;i<128;i++){
             printf("%lf ", device_p[get_index(j,i)]);
         }
         printf("\n");
@@ -67,7 +68,7 @@ double max_vector(double* device_p, int length){
     free(tmp);
     if(idx==0){
         printf("max_vector\n");
-        print_matrix(device_p);
+        print_matrix(device_p, imax, jmax);
     }
     return mymax;
 }
@@ -171,7 +172,7 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     }
     if(idx==0){
         printf("setbound\n");
-        print_matrix(cudaDevice_u);
+        print_matrix(cudaDevice_u, imax, jmax);
     }
 }
 
@@ -198,7 +199,7 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     }
     if(idx==0){
         printf("init_uvp\n");
-        print_matrix(cudaDevice_u);
+        print_matrix(cudaDevice_u, imax, jmax);
     }
 }
 
@@ -268,7 +269,7 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
     }
     if(idx==0){
         printf("comp_fg\n");
-        print_matrix(cudaDevice_f2);
+        print_matrix(cudaDevice_f2, imax, jmax);
     }
 }
 
@@ -303,7 +304,7 @@ __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, do
     }
     if(idx==0){
         printf("comp_rhs\n");
-        print_matrix(cudaDevice_rhs);
+        print_matrix(cudaDevice_rhs, imax, jmax);
     }
 }
 
@@ -364,7 +365,7 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     }
     if(idx==0){
         printf("poisson\n");
-        print_matrix(cudaDevice_p);
+        print_matrix(cudaDevice_p, imax, jmax);
     }
 }
 
