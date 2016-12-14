@@ -1,3 +1,11 @@
+int i,j;
+for(j=0;j<jmax+2;j++){
+    for(i=0;i<imax+2;i++){
+        printf("%lf ", device_p[get_index(j,i)]);
+    }
+    printf("\n");
+}
+
 cublasHandle_t handle;
     cublasCreate(&handle);
     double mymax = 0.0;
