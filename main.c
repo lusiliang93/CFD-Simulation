@@ -121,7 +121,7 @@ int main(int argc,char* argv[]){
 		printf("setbound\n");
 		for(j=0;j<jmax+2;j++){
 			for(i=0;i<imax+2;i++){
-				printf("%lf \n", u[j][i]);
+				printf("%lf ", u[j][i]);
 			}
 			printf(" \n");
 		}
@@ -129,7 +129,7 @@ int main(int argc,char* argv[]){
 		printf("comp_fg\n");
 		for(j=0;j<jmax+2;j++){
 			for(i=0;i<imax+2;i++){
-				printf("%lf \n", f[j][i]);
+				printf("%lf ", f[j][i]);
 			}
 			printf(" \n");
 		}
@@ -137,7 +137,7 @@ int main(int argc,char* argv[]){
 		printf("comp_rhs\n");
 		for(j=0;j<jmax+2;j++){
 			for(i=0;i<imax+2;i++){
-				printf("%lf \n", rhs[j][i]);
+				printf("%lf ", rhs[j][i]);
 			}
 			printf(" \n");
 		}
@@ -153,7 +153,7 @@ int main(int argc,char* argv[]){
             printf("setbound\n");
             for(j=0;j<jmax+2;j++){
             	for(i=0;i<imax+2;i++){
-            		printf("%lf \n", u[j][i]);
+            		printf("%lf ", u[j][i]);
             	}
             	printf(" \n");
             }
@@ -161,7 +161,7 @@ int main(int argc,char* argv[]){
             printf("comp_fg\n");
             for(j=0;j<jmax+2;j++){
             	for(i=0;i<imax+2;i++){
-            		printf("%lf \n", f[j][i]);
+            		printf("%lf ", f[j][i]);
             	}
             	printf(" \n");
             }
@@ -169,7 +169,7 @@ int main(int argc,char* argv[]){
             printf("comp_rhs\n");
             for(j=0;j<jmax+2;j++){
             	for(i=0;i<imax+2;i++){
-            		printf("%lf \n", rhs[j][i]);
+            		printf("%lf ", rhs[j][i]);
             	}
             	printf(" \n");
             }
