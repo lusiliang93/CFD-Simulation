@@ -136,7 +136,6 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     int j = idx;
     int i = idx;
     int us = 1;
-    printf("idx: %d\n", idx);
     if(j>=1&&j<jmax+1){
         cudaDevice_u[get_index(j, 0)] = 0;
         cudaDevice_u[get_index(j, imax)] = 0;
@@ -146,12 +145,15 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     if(i>=1&&i<imax+1){
         cudaDevice_v[get_index(0, i)] = 0;
         cudaDevice_v[get_index(jmax, i)] = 0;
+        printf("idx: %d\n", idx);
         cudaDevice_u[get_index(0, i)] = -cudaDevice_u2[get_index(1, i)];
         cudaDevice_u[get_index(jmax+1, i)] = 2*us-cudaDevice_u2[get_index(jmax, i)];
     }
 }
 
 void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
+    printf("setbound before\n");
+    print_kernel<<<1,1>>>(cudaDevice_u2,imax,jmax);
     int nBlocks = (max(jmax+1,imax+1) + THREADSPB-1)/THREADSPB;
     setbound_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2, imax, jmax);
     double* tmp_u = cudaDevice_u2;
