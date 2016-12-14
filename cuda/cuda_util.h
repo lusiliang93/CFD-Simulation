@@ -14,3 +14,5 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
 void comp_rhs(int imax, int jmax,double delt,double delx,double dely);
 int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,double omg);
 void adap_uv(int imax, int jmax, double delt, double delx, double dely);
+
+void get_data(double* u, double* v, int imax, int jmax);
