@@ -83,30 +83,30 @@ int compute(int procID,int nproc,char *inputname){
 	int wW,wE,wS,wN;
 	int iproc,jproc;
         char procid[10];
-	//double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
+	double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
 	double **u;
 	double **v;
 	double **p;
 	double **f;
 	double **g;
 	double **rhs;
-	//double **uu;
-	//double **vv;
-	//double *xx;
-	//double *yy;
+	double **uu;
+	double **vv;
+        double *xx;
+	double *yy;
 	double delx,dely,delt;
-	int i,j;//,ii,jj;
+	int i,j,ii,jj;
 	int rid,cid;
 	int iw,ie,js,jn,tw,te,ts,tn;
     FILE *input;
     FILE *outputu;
     FILE *outputv;
-   // FILE *outputu1;
-   // FILE *outputv1;
+    FILE *outputu1;
+    FILE *outputv1;
     char outputfilenameu[128];
     char outputfilenamev[128];
-   // char *outputfilenameu1;
-   // char *outputfilenamev1;
+    char outputfilenameu1[128];
+    char outputfilenamev1[128];
     clock_t t1,t2;
     double  total_t;
  
@@ -153,11 +153,11 @@ int compute(int procID,int nproc,char *inputname){
 	f=RMATRIX(0,jn+1-(js-1),0,ie+1-(iw-2));
 	g=RMATRIX(0,jn+1-(js-2),0,ie+1-(iw-1));
 	rhs=RMATRIX(0,jn-js+1,0,ie-iw+1);
-	//uu=RMATRIX(js,jn,iw,ie);
-	//vv=RMATRIX(js,jn,iw,ie);
+	uu=RMATRIX(0,jn-js+1,0,ie-iw+1);
+	vv=RMATRIX(0,jn-js+1,0,ie-iw+1);
 	/* allocate memory to xx, yy*/
-	//xx=(double *)malloc((imax/iproc+1)*sizeof(double));
-	//yy=(double *)malloc((jmax/jproc+1)*sizeof(double)); 
+	xx=(double *)malloc((imax/iproc+1)*sizeof(double));
+	yy=(double *)malloc((jmax/jproc+1)*sizeof(double)); 
         init_uvp(u,v,p,imax/iproc,jmax/jproc,UI,VI,PI,procID);
 
     t1=clock();
@@ -185,7 +185,7 @@ int compute(int procID,int nproc,char *inputname){
             adap_uv(u,v,f,g,p,imax/iproc,jmax/jproc,delt,delx,dely,tw,te,ts,tn,nproc,rid,cid,iproc,jproc,procID);
             t=t+delt;
             n++;
-            /*printf("The current delt:%f\n",delt);*/
+            //printf("The current delt:%f\n",delt);
             //printf("The current t:%f\n",t);
         }
 	}
@@ -228,78 +228,84 @@ int compute(int procID,int nproc,char *inputname){
 
 	/** post for visualization*/
 	/* change */
-	// for(i=0;i<imax+1;i++){
-	// 	xx[i]=delx*i;
-	// }
-	// for(j=0;j<jmax+1;j++){
-	// 	yy[j]=dely*j;
-	// }
-	// for(j=0;j<jmax+1;j++){/*Is that right?*/
-	// 	for(i=0;i<imax+1;i++){/*Is that right?*/
-	// 		x=xx[i];/*Is that right?*/
-	// 		y=yy[j];/*Is that right?*/
-	// 		ii=floor(x/delx)+1;
-	// 		jj=floor((y+dely/2)/dely)+1;
-	// 		x1=(ii-1)*delx;
-	// 		y1=((jj-1)-0.5)*dely;
-	// 		x2=ii*delx;
-	// 		y2=(jj-1/2)*dely;
-	// 		u1=u[jj-1][ii-1+1];
-	// 		u2=u[jj-1][ii+1];
-	// 		u3=u[jj][ii-1+1];
-	// 		u4=u[jj][ii+1];
-	// 		uu[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*u1+(x-x1)*(y2-y)*u2+(x2-x)*(y-y1)*u3+(x-x1)*(y-y1)*u4);
-	// 	}
-	// }
+	 for(i=0;i<imax/iproc+1;i++){
+	 	xx[i]=delx*i;
+	 }
+	 for(j=0;j<jmax/jproc+1;j++){
+	 	yy[j]=dely*j;
+	 }
+	 for(j=0;j<jmax/jproc+1;j++){/*Is that right?*/
+	 	for(i=0;i<imax/iproc+1;i++){/*Is that right?*/
+	 		x=xx[i];/*Is that right?*/
+	 		y=yy[j];/*Is that right?*/
+	 		ii=floor(x/delx)+1;
+	 		jj=floor((y+dely/2)/dely)+1;
+	 		x1=(ii-1)*delx;
+	 		y1=((jj-1)-0.5)*dely;
+	 		x2=ii*delx;
+			y2=(jj-1/2)*dely;
+	 		u1=u[jj-1][ii-1+1];// is that right?
+	 		u2=u[jj-1][ii+1];
+	 		u3=u[jj][ii-1+1];
+	 		u4=u[jj][ii+1];
+	 		uu[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*u1+(x-x1)*(y2-y)*u2+(x2-x)*(y-y1)*u3+(x-x1)*(y-y1)*u4);
+	 	}
+	 }
 	// /* vv*/
-	// for(j=0;j<jmax+1;j++){/*Is that right?*/
-	// 	for(i=0;i<imax+1;i++){
-	// 		x=xx[i];
-	// 		y=yy[j];
-	// 		jj=floor(y/dely)+1;
-	// 		ii=floor((x+delx/2)/delx)+1;
-	// 		y1=(jj-1)*dely;
-	// 		x1=((ii-1)-0.5)*delx;
-	// 		y2=jj*dely;
-	// 		x2=(ii-0.5)*delx;
-	// 		v1=v[jj-1+1][ii-1];
-	// 		v2=v[jj-1+1][ii];
-	// 		v3=v[jj+1][ii-1];
-	// 		v4=v[jj+1][ii];
-	// 		vv[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*v1+(x-x1)*(y2-y)*v2+(x2-x)*(y-y1)*v3+(x-x1)*(y-y1)*v4);
-	// 	}
-	// }
+	 for(j=0;j<jmax/jproc+1;j++){/*Is that right?*/
+	 	for(i=0;i<imax/iproc+1;i++){
+	 		x=xx[i];
+	 		y=yy[j];
+	 		jj=floor(y/dely)+1;
+	 		ii=floor((x+delx/2)/delx)+1;
+	 		y1=(jj-1)*dely;
+	 		x1=((ii-1)-0.5)*delx;
+	 		y2=jj*dely;
+	 		x2=(ii-0.5)*delx;
+	 		v1=v[jj-1+1][ii-1];//is that right?
+	 		v2=v[jj-1+1][ii];
+	 		v3=v[jj+1][ii-1];
+	 		v4=v[jj+1][ii];
+	 		vv[j][i]=1/(delx*dely)*((x2-x)*(y2-y)*v1+(x-x1)*(y2-y)*v2+(x2-x)*(y-y1)*v3+(x-x1)*(y-y1)*v4);
+	 	}
+	 }
 
 	// outputfilenameu1="post_outputu.txt";
  //    outputfilenamev1="post_outputv.txt";
-	// outputu1 = fopen(outputfilenameu1,"w+");
-	// outputv1 = fopen(outputfilenamev1,"w+");
-	// for(j=0;j<jmax+1;j++){
-	// 	for(i=0;i<imax+1;i++){
-	// 		fprintf(outputu1,"%f ",uu[j][i]);
-	// 	}
-	// 	fprintf(outputu1,"\n");
-	// }
-	// for(j=0;j<jmax+1;j++){
-	// 	for(i=0;i<imax+1;i++){
- //            fprintf(outputv1,"%f ",vv[j][i]);
-	// 	}
-	// 	fprintf(outputv1,"\n");
-	// }
-	// fclose(outputu1);
-	// fclose(outputv1);
-	// printf("uu into file:%s\n",outputfilenameu1);
-	// printf("vv into file:%s\n",outputfilenamev1);
+       strcpy(outputfilenameu1,"post_outputu_");
+       strcat(outputfilenameu1,procid);
+       strcat(outputfilenameu1,".txt");
+       strcpy(outputfilenamev1,"post_outputv_");
+       strcat(outputfilenamev1,procid);
+       strcat(outputfilenamev1,".txt");
+	 outputu1 = fopen(outputfilenameu1,"w+");
+	 outputv1 = fopen(outputfilenamev1,"w+");
+	 for(j=0;j<jmax/jproc+1;j++){
+	 	for(i=0;i<imax/iproc+1;i++){
+	 		fprintf(outputu1,"%f ",uu[j][i]);
+	 	}
+	 	fprintf(outputu1,"\n");
+	 }
+	 for(j=0;j<jmax/jproc+1;j++){
+	 	for(i=0;i<imax/iproc+1;i++){
+             fprintf(outputv1,"%f ",vv[j][i]);
+	 	}
+	 	fprintf(outputv1,"\n");
+	 }
+	 fclose(outputu1);
+	 fclose(outputv1);
+	 printf("uu into file:%s\n",outputfilenameu1);
+	 printf("vv into file:%s\n",outputfilenamev1);
 
-	FREE_RMATRIX(u,js-1,jn+1,iw-2,ie+1);
-	FREE_RMATRIX(v,js-2,jn+1,iw-1,ie+1);
-	FREE_RMATRIX(p,js-1,jn+1,iw-1,ie+1);
-	FREE_RMATRIX(f,js-1,jn+1,iw-2,ie+1);
-	FREE_RMATRIX(g,js-2,jn+1,iw-1,ie+1);
-	FREE_RMATRIX(rhs,js,jn,iw,ie);
-	//FREE_RMATRIX(uu,js,jn,iw,ie);
-	//FREE_RMATRIX(vv,js,jn,iw,ie);
-	//free(xx);
-	//free(yy);
+	FREE_RMATRIX(u,0,jn+1-(js-1),0,ie+1-(iw-2));
+	FREE_RMATRIX(v,0,jn+1-(js-2),0,ie+1-(iw-1));
+	FREE_RMATRIX(p,0,jn+1-(js-1),0,ie+1-(iw-1));
+	FREE_RMATRIX(f,0,jn+1-(js-1),0,ie+1-(iw-2));
+	FREE_RMATRIX(g,0,jn+1-(js-2),0,ie+1-(iw-1));
+	FREE_RMATRIX(rhs,0,jn-js+1,0,ie-iw+1);
+	FREE_RMATRIX(uu,0,jn-js+1,0,ie-iw+1);
+	FREE_RMATRIX(vv,0,jn-js+1,0,ie-iw+1);
+	free(xx);
+	free(yy);
 	return 0;
 }
