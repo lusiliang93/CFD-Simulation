@@ -36,11 +36,10 @@ double sum_vector(double* device_p, int length){
 /* return the max value in vector device_p */
 double max_vector(double* device_p, int length){
     cublasHandle_t handle;
-    cublasStatus_t stat;
     cublasCreate(&handle);
     double mymax = 0.0;
     int max_idx = 0;
-    stat = cublasIdamax(handle, length, device_p, 1, &max_idx);
+    cublasIdamax(handle, length, device_p, 1, &max_idx);
     mymax = device_p[max_idx];
     return mymax;
 }
