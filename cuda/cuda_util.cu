@@ -360,7 +360,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
 
         // serial part
         nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-        poisson_kernel_serial<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
+        poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
         sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
