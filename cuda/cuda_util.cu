@@ -185,7 +185,6 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     cudaDevice_v = tmp_v;
     cudaThreadSynchronize();
     printf("setbound\n");
-    print_kernel<<<1,1>>>(cudaDevice_u2, imax, jmax);
     return;
 }
 
@@ -205,7 +204,6 @@ void init_uvp(int imax, int jmax,int UI, int VI, int PI){
     init_uvp_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_p, imax,jmax,UI,VI,PI);
     cudaThreadSynchronize();
     printf("init_uvp\n");
-    print_kernel<<<1,1>>>(cudaDevice_u, imax, jmax);
 }
 
 __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax){
@@ -289,7 +287,6 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
 
     cudaThreadSynchronize();
     printf("comp_fg\n");
-    print_kernel<<<1,1>>>(cudaDevice_f2, imax, jmax);
 }
 
 __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_rhs, int imax, int jmax, double delx, double dely, double delt){
@@ -317,7 +314,6 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
 
     cudaThreadSynchronize();
     printf("comp_rhs\n");
-    print_kernel<<<1,1>>>(cudaDevice_rhs2, imax, jmax);
 }
 
 __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_r, int imax, int jmax){
@@ -396,7 +392,6 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
         printf("poisson\n");
-        print_kernel<<<1,1>>>(cudaDevice_p2, imax, jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
