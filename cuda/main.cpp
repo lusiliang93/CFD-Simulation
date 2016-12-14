@@ -169,9 +169,10 @@ int main(int argc,char* argv[]){
     dely=ylength/jmax;
     printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
 
-    init_uvp(imax,jmax,UI,VI,PI);
     t1=clock();
-    cuda_init(imax, jmax);
+	cuda_init(imax, jmax);
+	init_uvp(imax,jmax,UI,VI,PI);    
+    tend = 0.2;
     while(t<tend){
     	copy_matrix(imax, jmax);
         if(n==0){

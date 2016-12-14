@@ -17,7 +17,7 @@ CXXFLAGS=-O3 -Wall
 
 LDFLAGS=-L/usr/local/cuda-7.5/lib64/ -lcudart -lcublas
 NVCC=nvcc
-NVCCFLAGS=-O3 -m64
+NVCCFLAGS=-O3 -m64 -arch
 
 
 OBJS= $(OBJDIR)/cuda_util.o $(OBJDIR)/main.o
