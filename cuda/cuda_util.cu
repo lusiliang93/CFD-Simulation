@@ -262,7 +262,7 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
     return it;
 }
 
-__global__ void adap_uv_kernel(double* cudaDevice_u, double* cudaDevice_v, double cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_p2, int imax,int jmax,double delt,double delx,double dely){
+__global__ void adap_uv_kernel(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_p2, int imax,int jmax,double delt,double delx,double dely){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
     int i = idx%(jmax+2);
