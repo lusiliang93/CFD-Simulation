@@ -136,7 +136,7 @@ __global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     int j = idx;
     int i = idx;
     int us = 1;
-    printf("idx: %d\n");
+    printf("idx: %d\n", idx);
     if(j>=1&&j<jmax+1){
         cudaDevice_u[get_index(j, 0)] = 0;
         cudaDevice_u[get_index(j, imax)] = 0;
