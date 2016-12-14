@@ -251,6 +251,10 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
             cudaDevice_g[get_index(j,i)] = cudaDevice_v2[get_index(j,i)] + delt*(1/Re*(v2x2+v2y2)-uvx-v2y+gy);
         }
     }
+    if(j==64&&i==64){
+        printf("test f:%lf\n",cudaDevice_f[64][64]);
+        printf("test g:%lf\n",cudaDevice_g[64][64]);
+    }
 }
 
 void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
