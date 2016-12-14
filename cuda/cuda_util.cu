@@ -13,6 +13,7 @@
 #include <thrust/device_free.h>
 #include <thrust/extrema.h>
 #include <thrust/reduce.h>
+#include <thrust/execution_policy.h>
 #include "cublas_v2.h"
 
 #define THREADSPB 256
@@ -29,7 +30,7 @@ __global__ void fill_val(double* p, int length, int val){
 /* sum all the value in vector device_p */
 double sum_vector(double* device_p, int length){
     thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
-    double sum = thrust::reduce(d_ptr, d_ptr+length, (double)0.0, thrust::plus<double>());
+    double sum = thrust::reduce(thrust::device, d_ptr, d_ptr+length, (double)0.0, thrust::plus<double>());
     return sum;
 }
 
