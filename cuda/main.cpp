@@ -78,6 +78,7 @@ int main(int argc,char* argv[]){
     while(t<tend){
     	copy_matrix(imax, jmax);
     	printf("success copy_matrix\n");
+    	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
         if(n==0){
             delt=0.02;
             // setbound(imax,jmax,wW,wE,wN,wS);
