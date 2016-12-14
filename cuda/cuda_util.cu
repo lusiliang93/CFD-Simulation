@@ -30,7 +30,7 @@ __global__ void fill_val(double* p, int length, int val){
 __global__ void sum_kernel(double* device_p, int length, double* device_sum){
     *device_sum = 0;
     for(int i=0;i<length;i++){
-        *device_sum += p[i];
+        *device_sum += device_p[i];
     }
 }
 
