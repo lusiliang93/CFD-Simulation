@@ -37,9 +37,7 @@ int main(int argc,char* argv[]){
     double tend,tau,itermax,eps,omg,gamma;
     double Re,GX,GY,UI,VI,PI;
     int wW,wE,wS,wN;
-    double x,y,x1,y1,x2,y2,u1,u2,u3,u4,v1,v2,v3,v4;
     double delx,dely,delt;
-    int i,j,ii,jj;
     FILE *input;
     clock_t t1,t2;
     double  total_t;
