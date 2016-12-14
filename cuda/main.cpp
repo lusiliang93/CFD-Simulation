@@ -71,34 +71,32 @@ int main(int argc,char* argv[]){
     printf("xlengh:%f ylength:%f jmax:%d imax:%d Re:%f UI:%f VI:%f PI:%f GX:%f GY:%f tend:%f tau:%f itermax:%f eps:%f omg:%f gamma:%f\n",xlength,ylength,jmax,imax,Re,UI,VI,PI,GX,GY,tend,tau,itermax,eps,omg,gamma);
 
     init_uvp(imax,jmax,UI,VI,PI);
-    printf("success init_uvp\n");
     t1=clock();
     cuda_init(imax, jmax);
-    printf("success cuda_init\n");
     while(t<tend){
-    	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
     	copy_matrix(imax, jmax);
-    	printf("pointers: %p %p %p %p\n", cudaDevice_u, cudaDevice_u2, cudaDevice_v, cudaDevice_v2);
-    	printf("success copy_matrix\n");
-    	printf("check max_vector: %lf\n", max_vector(cudaDevice_u, (imax+2)*(jmax+2)));
-    	printf("check max_vector: %lf\n", max_vector(cudaDevice_u, (imax+2)*(jmax+2)));
         if(n==0){
             delt=0.02;
-            // setbound(imax,jmax,wW,wE,wN,wS);
-            // comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            // comp_rhs(imax,jmax,delt,delx,dely);
+            setbound(imax,jmax,wW,wE,wN,wS);
+            printf("after setbound\n");
+            comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+            printf("after comp_fg\n");
+            comp_rhs(imax,jmax,delt,delx,dely);
+            printf("after comp_rhs\n");
             // poisson(imax,jmax,delx,dely,eps,itermax,omg);
             // adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
             n++;
             printf("The current t:%f\n",t);
         }else{
-        	printf("defore comp_delt\n");
             delt = comp_delt(imax,jmax,delx,dely,Re,tau);
             printf("after comp_delt\n");
-            // setbound(imax,jmax,wW,wE,wN,wS);
-            // comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
-            // comp_rhs(imax,jmax,delt,delx,dely);
+            setbound(imax,jmax,wW,wE,wN,wS);
+            printf("after setbound\n");
+            comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
+            printf("after comp_fg\n");
+            comp_rhs(imax,jmax,delt,delx,dely);
+            printf("after comp_rhs\n");
             // poisson(imax,jmax,delx,dely,eps,itermax,omg);
             // adap_uv(imax,jmax,delt,delx,dely);
             t=t+delt;
