@@ -10,6 +10,8 @@
 #include <thrust/device_ptr.h>
 #include <thrust/device_malloc.h>
 #include <thrust/device_free.h>
+#include <thrust/extrema.h>
+#include <thrust/reduce.h>
 
 #define THREADSPB 256
 #define get_index(i,j) ((jmax+2)*i+j)
@@ -25,7 +27,7 @@ __global__ void fill_val(double* p, int length, int val){
 /* sum all the value in vector device_p */
 double sum_vector(double* device_p, int length){
     thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
-    double sum = thrust::reduce(d_ptr.begin(), d_ptr.begin()+length, (double)0.0, thrust::plus<double>());
+    double sum = thrust::reduce(d_ptr, d_ptr+length, (double)0.0, thrust::plus<double>());
     return sum;
 }
 
