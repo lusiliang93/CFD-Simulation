@@ -252,8 +252,9 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
         }
     }
     if(j==64&&i==64){
-        printf("test f:%lf\n",cudaDevice_f[64][64]);
-        printf("test g:%lf\n",cudaDevice_g[64][64]);
+        printf("idx: %d %d\n", idx, 64*(jmax+2)+64);
+        printf("test f:%lf\n",cudaDevice_f[64*(jmax+2)+64]);
+        printf("test g:%lf\n",cudaDevice_g[64*(jmax+2)+64]);
     }
 }
 
