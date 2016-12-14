@@ -18,7 +18,7 @@
 #include <float.h>
 
 #define THREADSPB 256
-#define get_index(i,j) ((jmax+2)*i+j)
+#define get_index(m,n) ((jmax+2)*m+n)
 
 double *cudaDevice_u, *cudaDevice_v, *cudaDevice_p, *cudaDevice_f, *cudaDevice_g, *cudaDevice_rhs;
 double *cudaDevice_u2, *cudaDevice_v2, *cudaDevice_p2, *cudaDevice_f2, *cudaDevice_g2, *cudaDevice_rhs2;
