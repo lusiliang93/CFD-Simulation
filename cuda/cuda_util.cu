@@ -317,21 +317,23 @@ __global__ void poisson_kernel_2(double* cudaDevice_r, double* cudaDevice_p, dou
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax+1){
             eiw=1;eie=1;ejs=1;ejn=1;
-            cudaDevice_p[get_index(j,i)] = (1-omg)*cudaDevice_p2[get_index(j,i)]
+            cudaDevice_p[get_index(j,i)] = (1-omg)*cudaDevice_p[get_index(j,i)]
             +
-            omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely)) * (
-                (eie*cudaDevice_p2[get_index(j,i+1)]+eiw*cudaDevice_p2[get_index(j,i-1)])/(delx*delx)
-                +(ejn*cudaDevice_p2[get_index(j+1,i)]+ejs*cudaDevice_p2[get_index(j-1,i)])/(dely*dely)
+            omg/
+            ((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
+                * (
+                (eie*cudaDevice_p[get_index(j,i+1)]+eiw*cudaDevice_p[get_index(j,i-1)])/(delx*delx)
+                +(ejn*cudaDevice_p[get_index(j+1,i)]+ejs*cudaDevice_p[get_index(j-1,i)])/(dely*dely)
                 -cudaDevice_rhs2[get_index(j,i)]
             );
 
             cudaDevice_r[get_index(j,i)] = (
-                eie*(cudaDevice_p2[get_index(j,i+1)]-cudaDevice_p2[get_index(j,i)])
-                -eiw*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j,i-1)])
+                eie*(cudaDevice_p[get_index(j,i+1)]-cudaDevice_p[get_index(j,i)])
+                -eiw*(cudaDevice_p[get_index(j,i)]-cudaDevice_p[get_index(j,i-1)])
                 )/(delx*delx)
             +    (
-                ejn*(cudaDevice_p2[get_index(j+1,i)]-cudaDevice_p2[get_index(j,i)])
-                -ejs*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j-1,i)])
+                ejn*(cudaDevice_p[get_index(j+1,i)]-cudaDevice_p[get_index(j,i)])
+                -ejs*(cudaDevice_p[get_index(j,i)]-cudaDevice_p[get_index(j-1,i)])
                 )/(dely*dely)
             - cudaDevice_rhs2[get_index(j,i)];
 
@@ -366,9 +368,9 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
             break;
         }
         /* copy p to stale p(p2) */
-        double* tmp_p = cudaDevice_p2;
-        cudaDevice_p2 = cudaDevice_p;
-        cudaDevice_p = tmp_p;
+        // double* tmp_p = cudaDevice_p2;
+        // cudaDevice_p2 = cudaDevice_p;
+        // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
         printf("poisson\n");
         print_kernel<<<1,1>>>(cudaDevice_p2,imax,jmax);

@@ -109,12 +109,23 @@ int poisson(double **p,double **rhs,int imax,int jmax,double delx,double dely,do
 			for(i=1;i<imax+1;i++){
                 eiw=1;eie=1;ejs=1;ejn=1;
 				p[j][i]=(1-omg)*p[j][i]
-				+omg/((eie+eiw)/(delx*delx)+(ejn+ejs)/(dely*dely))
-				*((eie*p[j][i+1]+eiw*p[j][i-1])/(delx*delx)
-				+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)-rhs[j][i]);
+				+ omg/
+					(
+						(eie+eiw)/(delx*delx)
+						+(ejn+ejs)/(dely*dely)
+					)
+				*(
+					(eie*p[j][i+1]+eiw*p[j][i-1])/(delx*delx)
+					+(ejn*p[j+1][i]+ejs*p[j-1][i])/(dely*dely)
+					-rhs[j][i]
+				);
 
-				r[j][i]=(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))/(delx*delx)
-				+(ejn*(p[j+1][i]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))/(dely*dely)-rhs[j][i];
+				r[j][i]=
+				(eie*(p[j][i+1]-p[j][i])-eiw*(p[j][i]-p[j][i-1]))
+				/(delx*delx)
+				+
+				(ejn*(p[j+1][i]-p[j][i])-ejs*(p[j][i]-p[j-1][i]))
+				/(dely*dely)-rhs[j][i];
                 sum=sum+r[j][i]*r[j][i];
 			}
 		}
