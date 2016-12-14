@@ -44,6 +44,7 @@ __global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, do
 
 __global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    int i = idx;
     int us = 1;
     if(idx>=1&&idx<imax+1){
         cudaDevice_v2[get_index(0, i)] = 0;
@@ -74,7 +75,7 @@ __global__ void init_uvp_kernel(double* cudaDevice_u, double* cudaDevice_v, doub
     }
 }
 
-void init_uvp(int UI, int VI, int PI){
+void init_uvp(int imax, int jmax,int UI, int VI, int PI){
     int nBlocks = ((jmax+2)*(imax+2) + THREADSPB-1)/THREADSPB;
     init_uvp_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_p, imax,jmax,UI,VI,PI);
 }
@@ -98,11 +99,11 @@ __global__ void comp_fg_kernel_1(double* cudaDevice_u2, double* cudaDevice_v2, d
     }
 }
 
-__global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax, double delt,double delx,double dely,double gx,double gy,double gamma){
+__global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, double* cudaDevice_f, double* cudaDevice_g, int imax, int jmax, double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
     int i = idx%(jmax+2);
-
+    int a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2,v2y,v2x2,v2y2;
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax){
             a = cudaDevice_u2[get_index(j,i)] + cudaDevice_u2[get_index(j,i+1)];
@@ -144,7 +145,7 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
     }
 }
 
-void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,double gy,double gamma){
+void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re){
     int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f, (imax+2)*(jmax+2), 0);
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g, (imax+2)*(jmax+2), 0);
@@ -153,7 +154,7 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
     comp_fg_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_u2, cudaDevice_v2, cudaDevice_f, cudaDevice_g, imax, jmax);
 
     nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-    comp_fg_kernel_2<<<nBlocks, THREADSPB>>>(cudaDevice_u2, cudaDevice_v2, cudaDevice_f, cudaDevice_g, imax, jmax, delt, delx, dely, gx, gy, gamma);
+    comp_fg_kernel_2<<<nBlocks, THREADSPB>>>(cudaDevice_u2, cudaDevice_v2, cudaDevice_f, cudaDevice_g, imax, jmax, delt, delx, dely, gx, gy, gamma, Re);
 }
 
 __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_rhs, int imax, int jmax, double delx, double dely, double delt){
@@ -172,7 +173,7 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
     int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
 
-    nBlocks = = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
     comp_rhs_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_f2, cudaDevice_g2, cudaDevice_rhs, imax, jmax, delx, dely, delt);
 }
 
