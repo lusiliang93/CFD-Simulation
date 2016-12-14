@@ -327,6 +327,8 @@ __global__ void poisson_kernel_serial(double* cudaDevice_r, double* cudaDevice_p
             double a3 = (a4+a5-a6);
             cudaDevice_p[get_index(j,i)] = a1 + a2 * a3;
             
+            printf("%d %d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n", j,i,a1,a2,a3,a4,a5,a6,aa1,aa2,aa3,aa4);
+
             cudaDevice_r[get_index(j,i)] = (
                 eie*(cudaDevice_p2[get_index(j,i+1)]-cudaDevice_p2[get_index(j,i)])
                 -eiw*(cudaDevice_p2[get_index(j,i)]-cudaDevice_p2[get_index(j,i-1)])
