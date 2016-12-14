@@ -133,6 +133,12 @@ void copy_matrix(int imax, int jmax){
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f, (imax+2)*(jmax+2), 0);
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g, (imax+2)*(jmax+2), 0);
     fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_u2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_v2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_p2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_f2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_g2, (imax+2)*(jmax+2), 0);
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_rhs2, (imax+2)*(jmax+2), 0);
 }
 
 double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
