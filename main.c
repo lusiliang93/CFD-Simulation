@@ -75,17 +75,7 @@ int main(int argc,char* argv[]){
     clock_t t1,t2;
     double  total_t;
 	/*Read command line arguments*/
-	do {
-		opt = getopt(argc,argv,"f:"); /*why type -f?*/
-		switch(opt){
-			case 'f':
-                inputname=optarg;
-			break;
-
-			default:
-            break;
-		}
-	}while (opt!=-1);
+	inputname = "input.txt";
 
 	/* read inputs*/
 	if (inputname==NULL){
