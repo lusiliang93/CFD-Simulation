@@ -103,7 +103,8 @@ __global__ void comp_fg_kernel_2(double* cudaDevice_u2, double* cudaDevice_v2, d
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx/(jmax+2);
     int i = idx%(jmax+2);
-    int a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2,v2y,v2x2,v2y2;
+    double a,b,c,d,e,ff,gg,h,va,vb,u2x,uvy,u2x2,u2y2;
+    double ua,ub,uvx,v2y,v2x2,v2y2;
     if(j>=1&&j<jmax+1){
         if(i>=1&&i<imax){
             a = cudaDevice_u2[get_index(j,i)] + cudaDevice_u2[get_index(j,i+1)];
