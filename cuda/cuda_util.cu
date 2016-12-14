@@ -139,34 +139,31 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     return ret;
 }
 
-__global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
+__global__ void setbound_kernel(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     int j = idx;
-    if(idx>=1&&idx<jmax+1){
+    int i = idx;
+    int us = 1;
+    if(j>=1&&j<jmax+1){
         cudaDevice_u[get_index(j, 0)] = 0;
         cudaDevice_u[get_index(j, imax)] = 0;
         cudaDevice_v[get_index(j, 0)] = -cudaDevice_v2[get_index(j, 1)];
         cudaDevice_v[get_index(j, imax+1)] = -cudaDevice_v2[get_index(j, imax)];
     }
-}
-
-__global__ void setbound_kernel_y(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    int i = idx;
-    int us = 1;
-    if(idx>=1&&idx<imax+1){
+    if(i>=1&&i<imax+1){
         cudaDevice_v[get_index(0, i)] = 0;
         cudaDevice_v[get_index(jmax, i)] = 0;
         cudaDevice_u[get_index(0, i)] = -cudaDevice_u2[get_index(1, i)];
-        cudaDevice_u[get_index(jmax+1, i)] = 2*us - cudaDevice_u2[get_index(jmax, i)];
+        cudaDevice_u[get_index(jmax+1, i)] = 2*us-cudaDevice_u2[get_index(jmax, i)];
+    }
+    if(idx==0){
+        printf("setbnd test u:%f\n", cudaDevice_u[get_index(jmax+1, 64)]);
     }
 }
 
 void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
-    int nBlocks = (jmax+1 + THREADSPB-1)/THREADSPB;
-    setbound_kernel_x<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
-    nBlocks = (imax+1 + THREADSPB-1)/THREADSPB;
-    setbound_kernel_y<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2,imax,jmax);
+    int nBlocks = (max(jmax+1,imax+1) + THREADSPB-1)/THREADSPB;
+    setbound_kernel<<<nBlocks, THREADSPB>>>(cudaDevice_u, cudaDevice_v, cudaDevice_u2, cudaDevice_v2, imax, jmax);
     double* tmp_u = cudaDevice_u2;
     cudaDevice_u2 = cudaDevice_u;
     cudaDevice_u = tmp_u;
