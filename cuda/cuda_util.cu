@@ -34,12 +34,13 @@ double sum_vector(double* device_p, int length){
 /* return the max value in vector device_p */
 double max_vector(double* device_p, int length){
     thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
-    double mymax = *(thrust::max_element(d_ptr, d_ptr + length));
+    double mymax = 0.0;
+    // double mymax = *(thrust::max_element(d_ptr, d_ptr + length));
     return mymax;
 }
 
 void cuda_init(int imax, int jmax){
-    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2) *sizeof(double));
+    cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_p, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_f, (imax+2)*(jmax+2)*sizeof(double));
