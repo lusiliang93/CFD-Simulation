@@ -24,16 +24,16 @@ __global__ void fill_val(double* p, int length, int val){
 
 /* sum all the value in vector device_p */
 double sum_vector(double* device_p, int length){
-    thrust::device_ptr<int> d_input = thrust::device_malloc<int>(length);
-    thrust::device_ptr<int> d_output = thrust::device_malloc<int>(length);
-    cudaMemcpy(d_input.get(), device_p, length * sizeof(double), 
-               cudaMemcpyHostToHost);
-    thrust::exclusive_scan(d_input, d_input + length, d_output);
-    cudaThreadSynchronize();
-    double sum = d_output[0];
-    thrust::device_free(d_input);
-    thrust::device_free(d_output);
+    thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
+    double sum = thrust::reduce(d_ptr.begin(), d_ptr.begin()+length, (double)0.0, thrust::plus<double>());
     return sum;
+}
+
+/* return the max value in vector device_p */
+double max_vector(double* device_p, int length){
+    thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
+    double mymax = *(thrust::max_element(d_ptr, d_ptr + length));
+    return mymax;
 }
 
 void cuda_init(int imax, int jmax){
@@ -100,8 +100,8 @@ void comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
     double delta = 1/(delx*delx)+1/(dely*dely);
     first = Re/2/delta;
     min=first;
-    second = delx/abs(max(u));
-    third= dely/abs(max(v));
+    second = delx/abs(max_vector(cudaDevice_u2));
+    third= dely/abs(max_vector(cudaDevice_v2));
     if(min>second){
         min=second;
         if(min>third)
@@ -111,8 +111,8 @@ void comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau){
         if(min>third)
             min=third;
     }
-    *delt=tau*min;
-    return;
+    double ret = tau*min;
+    return ret;
 }
 
 __global__ void setbound_kernel_x(double* cudaDevice_u, double* cudaDevice_v, double* cudaDevice_u2, double* cudaDevice_v2, int imax, int jmax){

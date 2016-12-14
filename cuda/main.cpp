@@ -30,35 +30,6 @@ void FREE_RMATRIX(double *m){
     return;
 }
 
-void adap_uv(double *u,double *v,double *f,double *g,double *p,double delt,double delx,double dely){
-    int i,j;
-    for(j=1;j<jmax+1;j++){
-        for(i=1;i<imax;i++){
-            u[get_index(j,i)] = f[get_index(j,i)] - delt/delx*(p[get_index(j,i+1)]-p[get_index(j,i)]);
-        }
-    }
-    for(j=1;j<jmax;j++){
-        for(i=1;i<imax+1;i++){
-            v[get_index(j,i)] = g[get_index(j,i)] - delt/dely*(p[get_index(j+1,i)]-p[get_index(j,i)]);
-        }
-    }
-    return;
-}
-
-
-double max(double* u){
-    int i,j;
-    double max=0;
-    for(j=0;j<jmax+1;j++){
-        for(i=0;i<imax+1;i++){
-            if(u[get_index(j,i)]>max){
-                max = u[get_index(j,i)];
-            }
-        }
-    }
-    return max;
-}
-
 int main(int argc,char* argv[]){
     int n=0;
     double t=0;
@@ -107,7 +78,7 @@ int main(int argc,char* argv[]){
             n++;
             printf("The current t:%f\n",t);
         }else{
-            delt = comp_delt(delx,dely,Re,tau);
+            delt = comp_delt(imax,jmax,delx,dely,Re,tau);
             // setbound(imax,jmax,wW,wE,wN,wS);
             // comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             // comp_rhs(imax,jmax,delt,delx,dely);
