@@ -13,6 +13,7 @@
 #include <thrust/device_free.h>
 #include <thrust/extrema.h>
 #include <thrust/reduce.h>
+#include "cublas_v2.h"
 
 #define THREADSPB 256
 #define get_index(i,j) ((jmax+2)*i+j)
@@ -34,9 +35,13 @@ double sum_vector(double* device_p, int length){
 
 /* return the max value in vector device_p */
 double max_vector(double* device_p, int length){
-    thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
+    cublasHandle_t handle;
+    cublasStatus_t stat;
+    cublasCreate(&handle);
     double mymax = 0.0;
-    mymax = thrust::reduce(d_ptr, d_ptr+length,     (double)0.0, thrust:: maximum<double>());
+    int max_idx = 0;
+    stat = cublasIdamax(handle, length, device_p, 1, &max_idx);
+    mymax = device_p[max_idx];
     return mymax;
 }
 
