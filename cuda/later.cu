@@ -1,3 +1,6 @@
+thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
+double sum = thrust::reduce(thrust::device, d_ptr, d_ptr+length, (double)0.0, thrust::plus<double>());
+
 __global__ void fg_kernel(double** u, double** v, double** f, double** g, int imax, int jmax, double delt, double delx, double dely, double gx, double gy, double gamma, double Re){
 	int i = blockIdx.x * blockDim.x + threadIdx.x;
     int j = blockIdx.y * blockDim.y + threadIdx.y;

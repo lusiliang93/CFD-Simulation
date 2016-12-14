@@ -27,10 +27,21 @@ __global__ void fill_val(double* p, int length, int val){
     p[idx] = val;
 }
 
+__global__ void sum_kernel(double* device_p, int length, double* device_sum){
+    *device_sum = 0;
+    for(int i=0;i<length;i++){
+        *device_sum += p[i];
+    }
+}
+
 /* sum all the value in vector device_p */
 double sum_vector(double* device_p, int length){
-    thrust::device_ptr<double> d_ptr = thrust::device_pointer_cast(device_p);
-    double sum = thrust::reduce(thrust::device, d_ptr, d_ptr+length, (double)0.0, thrust::plus<double>());
+    double* device_sum;
+    cudaMalloc(&device_sum, sizeof(double));
+    sum_kernel<<<1, 1>>>(device_p, length, device_sum);
+    double* tmp = (double*)malloc(sizeof(double));
+    cudaMemcpy(tmp,device_sum,sizeof(double),cudaMemcpyDeviceToHost);
+    double sum = *tmp;
     return sum;
 }
 
