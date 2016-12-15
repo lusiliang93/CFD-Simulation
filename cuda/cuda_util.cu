@@ -126,7 +126,7 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     free(v);
     // second = delx/abs(max_vector(cudaDevice_u2, length));
     // third = dely/abs(max_vector(cudaDevice_v2, length));
-    second = delx/abs(*result1)
+    second = delx/abs(*result1);
     third = dely/abs(*result2);
     if(min>second){
         min=second;
