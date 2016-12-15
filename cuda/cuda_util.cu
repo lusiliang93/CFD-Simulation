@@ -160,7 +160,6 @@ void setbound(int imax,int jmax,int wW, int wE,int wN,int wS){
     cudaDevice_v2 = cudaDevice_v;
     cudaDevice_v = tmp_v;
     cudaThreadSynchronize();
-    print_kernel<<<1,1>>>(cudaDevice_u2,imax,jmax);
     return;
 }
 
@@ -261,7 +260,6 @@ void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,do
     cudaDevice_g = tmp_g;
 
     cudaThreadSynchronize();
-    print_kernel<<<1,1>>>(cudaDevice_f2,imax,jmax);
 }
 
 __global__ void comp_rhs_kernel(double* cudaDevice_f2, double* cudaDevice_g2, double* cudaDevice_rhs, int imax, int jmax, double delx, double dely, double delt){
@@ -288,7 +286,6 @@ void comp_rhs(int imax, int jmax,double delt,double delx,double dely){
     cudaDevice_rhs = tmp_rhs;
 
     cudaThreadSynchronize();
-    print_kernel<<<1,1>>>(cudaDevice_rhs2,imax,jmax);
 }
 
 __global__ void poisson_kernel_1(double* cudaDevice_p, double* cudaDevice_p2, double* cudaDevice_r, int imax, int jmax){
@@ -384,12 +381,9 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
     double res;
     double* cudaDevice_r;
     cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
+    int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
     for(it=0;it<itermax;it++){
-        int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-        /* Init of r to 0 can be moved out of the loop */
-        fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
-        cudaThreadSynchronize();
-
         nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
         poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
         cudaThreadSynchronize();
@@ -399,8 +393,9 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
-        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
-        res=sqrt(sum/(imax*jmax));
+        // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        // res=sqrt(sum/(imax*jmax));
+        res = eps+1;
         if(res<eps){
             break;
         }
@@ -409,7 +404,6 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         // cudaDevice_p2 = cudaDevice_p;
         // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
-        print_kernel<<<1,1>>>(cudaDevice_p,imax,jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
@@ -421,12 +415,9 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
     double res;
     double* cudaDevice_r;
     cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
+    int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
+    fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
     for(it=0;it<itermax;it++){
-        int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
-        /* Init of r to 0 can be moved out of the loop */
-        fill_val<<<nBlocks, THREADSPB>>>(cudaDevice_r, (imax+2)*(jmax+2), 0);
-        cudaThreadSynchronize();
-
         nBlocks = (max(imax,jmax)+2 + THREADSPB-1)/THREADSPB;
         poisson_kernel_1<<<nBlocks, THREADSPB>>>(cudaDevice_p, cudaDevice_p2, cudaDevice_r, imax, jmax);
         cudaThreadSynchronize();
@@ -449,7 +440,6 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         // cudaDevice_p2 = cudaDevice_p;
         // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
-        print_kernel<<<1,1>>>(cudaDevice_p,imax,jmax);
     }
     cudaFree(cudaDevice_r);
     return it;
