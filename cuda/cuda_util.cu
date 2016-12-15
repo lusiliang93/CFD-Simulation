@@ -76,6 +76,19 @@ double max_vector(double* device_p, int length){
     return mymax;
 }
 
+double max_vector2(double* device_p, int length){
+    cublasHandle_t handle;
+    cublasCreate(&handle);
+    double mymax = 0.0;
+    int max_idx = 0;
+    cublasIdamax(handle, length, device_p, 1, &max_idx);
+    double* tmp = (double*)malloc(sizeof(double));
+    cudaMemcpy(tmp,&(device_p[max_idx]),sizeof(double),cudaMemcpyDeviceToHost);
+    mymax = *tmp;
+    free(tmp);
+    return mymax;
+}
+
 void cuda_init(int imax, int jmax){
     cudaMalloc(&cudaDevice_u, (imax+2)*(jmax+2)*sizeof(double));
     cudaMalloc(&cudaDevice_v, (imax+2)*(jmax+2)*sizeof(double));
@@ -117,13 +130,18 @@ double comp_delt(double* u, double* v, int imax, int jmax,double delx,double del
     min=first;
     int length = (imax+2)*(jmax+2);
     
-    cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    // cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    // cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    // double* result1 = thrust::max_element(thrust::host, u, u+length);
+    // double* result2 = thrust::max_element(thrust::host, v, v+length);
+    // second = delx/abs(*result1);
+    // third = dely/abs(*result2);
 
-    double* result1 = thrust::max_element(thrust::host, u, u+length);
-    double* result2 = thrust::max_element(thrust::host, v, v+length);
-    second = delx/abs(*result1);
-    third = dely/abs(*result2);
+    double result1 = max_vector2(cudaDevice_u2);
+    double result2 = max_vector2(cudaDevice_v2);
+    second = delx/abs(result1);
+    third = dely/abs(result2);
+
     if(min>second){
         min=second;
         if(min>third)
