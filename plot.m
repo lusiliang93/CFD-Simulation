@@ -15,5 +15,5 @@ axis([0,1.1,0,2.5]);
 fig = figure;
 streamslice(xx,yy,u,v);
 axis tight;
-print(fig,'MySavedPlot','-dpng');
+print(fig,'visualization','-dpng');
 quit;
