@@ -1,8 +1,10 @@
-run
+*run
+*cudaCFD*
 *.o
-output*
-test.txt
-.DS_Store
+*output*
+*test.txt
+*postoutput*
+*.DS_Store
 *output*.txt
 *.png
 *.jpg

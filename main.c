@@ -42,7 +42,7 @@ void comp_delt(double* delt,int imax,int jmax,double delx,double dely,double **u
 }
 
 int main(int argc,char* argv[]){
-	int opt=0,n=0;
+	int n=0;
 	double t=0;
 	double xlength,ylength;
 	double tend,tau,itermax,eps,omg,gamma;

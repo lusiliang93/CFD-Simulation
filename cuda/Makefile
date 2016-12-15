@@ -13,11 +13,11 @@ ARCH=$(shell uname | sed -e 's/-.*//g')
 
 OBJDIR=objs
 CXX=g++ -m64
-CXXFLAGS=-O3 -Wall
+CXXFLAGS=-O3 -Wall -D_FORCE_INLINES
 
 LDFLAGS=-L/usr/local/cuda-7.5/lib64/ -lcudart -lcublas
 NVCC=nvcc
-NVCCFLAGS=-O3 -m64 -arch compute_20
+NVCCFLAGS=-O3 -m64 -D_FORCE_INLINES
 
 
 OBJS= $(OBJDIR)/cuda_util.o $(OBJDIR)/main.o
