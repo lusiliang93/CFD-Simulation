@@ -137,8 +137,8 @@ double comp_delt(double* u, double* v, int imax, int jmax,double delx,double del
     // second = delx/abs(*result1);
     // third = dely/abs(*result2);
 
-    double result1 = max_vector2(cudaDevice_u2);
-    double result2 = max_vector2(cudaDevice_v2);
+    double result1 = max_vector2(cudaDevice_u2, length);
+    double result2 = max_vector2(cudaDevice_v2, length);
     second = delx/abs(result1);
     third = dely/abs(result2);
 
