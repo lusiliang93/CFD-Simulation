@@ -116,8 +116,18 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     first = Re/2/delta;
     min=first;
     int length = (imax+2)*(jmax+2);
-    second = delx/abs(max_vector(cudaDevice_u2, length));
-    third= dely/abs(max_vector(cudaDevice_v2, length));
+    double* u = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+    double* v = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+    cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    double *result1 = thrust::max_element(thrust::host, u, u + (imax+2)*(jmax+2));
+    double *result2 = thrust::max_element(thrust::host, v, v + (imax+2)*(jmax+2));
+    free(u);
+    free(v);
+    // second = delx/abs(max_vector(cudaDevice_u2, length));
+    // third= dely/abs(max_vector(cudaDevice_v2, length));
+    second = delx/abs(*result1)
+    second = delx/abs(*result2);
     if(min>second){
         min=second;
         if(min>third)
@@ -393,7 +403,11 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
-        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        double* sum_arr = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+        cudaMemcpy(sum_arr,cudaDevice_r,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+        sum = thrust::reduce(thrust::host, sum_arr, sum_arr + (imax+2)*(jmax+2));
+
+        // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
         res=sqrt(sum/(imax*jmax));
         if(res<eps){
             break;
@@ -429,16 +443,12 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 0);
         cudaThreadSynchronize();
 
-        // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
-        // res=sqrt(sum/(imax*jmax));
-        res = eps + 1;
+        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        res=sqrt(sum/(imax*jmax));
         if(res<eps){
             break;
         }
         /* copy p to stale p(p2) */
-        // double* tmp_p = cudaDevice_p2;
-        // cudaDevice_p2 = cudaDevice_p;
-        // cudaDevice_p = tmp_p;
         cudaThreadSynchronize();
     }
     cudaFree(cudaDevice_r);
