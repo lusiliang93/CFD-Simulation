@@ -384,7 +384,7 @@ __global__ void poisson_kernel_odd_even(double* cudaDevice_r, double* cudaDevice
 int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int itermax,double omg){
     int it;
     double sum;
-    double res;
+    double res = 0;
     double* cudaDevice_r;
     cudaMalloc(&cudaDevice_r, (imax+2)*(jmax+2) *sizeof(double));
     int nBlocks = ((imax+2)*(jmax+2) + THREADSPB-1)/THREADSPB;
