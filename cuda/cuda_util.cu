@@ -116,18 +116,26 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     first = Re/2/delta;
     min=first;
     int length = (imax+2)*(jmax+2);
-    double* u = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
-    double* v = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
-    cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-    cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-    double *result1 = thrust::max_element(thrust::host, u, u + length);
-    double *result2 = thrust::max_element(thrust::host, v, v + length);
-    free(u);
-    free(v);
+    // double* u = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+    // double* v = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+    // cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    // cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+    double* local1 = (double*)malloc(sizeof(double));
+    double* local2 = (double*)malloc(sizeof(double));
+    double *result1 = thrust::max_element(thrust::device, cudaDevice_u2, cudaDevice_u2 + length);
+    double *result2 = thrust::max_element(thrust::device, cudaDevice_u2, cudaDevice_u2 + length);
+    cudaMemcpy(local1,result1,sizeof(double),cudaMemcpyDeviceToHost);
+    cudaMemcpy(local2,result2,sizeof(double),cudaMemcpyDeviceToHost);
+    second = delx/abs(*local1);
+    third = dely/abs(*local2);
+    free(local1);
+    free(local2);
+    // free(u);
+    // free(v);
     // second = delx/abs(max_vector(cudaDevice_u2, length));
     // third = dely/abs(max_vector(cudaDevice_v2, length));
-    second = delx/abs(*result1);
-    third = dely/abs(*result2);
+    // second = delx/abs(*result1);
+    // third = dely/abs(*result2);
     if(min>second){
         min=second;
         if(min>third)
@@ -403,10 +411,10 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
-        double* sum_arr = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
-        cudaMemcpy(sum_arr,cudaDevice_r,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-        sum = thrust::reduce(thrust::host, sum_arr, sum_arr + (imax+2)*(jmax+2));
-
+        // double* sum_arr = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+        // cudaMemcpy(sum_arr,cudaDevice_r,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+        // sum = thrust::reduce(thrust::host, sum_arr, sum_arr + (imax+2)*(jmax+2));
+        sum = thrust::reduce(thrust::device, cudaDevice_r, cudaDevice_r + (imax+2)*(jmax+2));
         // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
         res=sqrt(sum/(imax*jmax));
         if(res<eps){
