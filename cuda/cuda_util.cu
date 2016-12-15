@@ -399,15 +399,15 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
-        double* sum_arr = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
-        cudaMemcpy(sum_arr,cudaDevice_r,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-        sum = thrust::reduce(thrust::host, sum_arr, sum_arr + (imax+2)*(jmax+2));
-        // sum = thrust::reduce(thrust::device, cudaDevice_r, cudaDevice_r + (imax+2)*(jmax+2));
+        // double* sum_arr = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+        //cudaMemcpy(sum_arr,cudaDevice_r,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
+        // sum = thrust::reduce(thrust::host, sum_arr, sum_arr + (imax+2)*(jmax+2));
+        
         // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
-        res=sqrt(sum/(imax*jmax));
-        if(res<eps){
-            break;
-        }
+        // res=sqrt(sum/(imax*jmax));
+        // if(res<eps){
+           // break;
+        // }
         /* copy p to stale p(p2) */
         // double* tmp_p = cudaDevice_p2;
         // cudaDevice_p2 = cudaDevice_p;
