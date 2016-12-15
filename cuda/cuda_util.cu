@@ -120,14 +120,14 @@ double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau
     double* v = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
     cudaMemcpy(u,cudaDevice_u2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
     cudaMemcpy(v,cudaDevice_v2,(imax+2)*(jmax+2)*sizeof(double),cudaMemcpyDeviceToHost);
-    double *result1 = thrust::max_element(thrust::host, u, u + (imax+2)*(jmax+2));
-    double *result2 = thrust::max_element(thrust::host, v, v + (imax+2)*(jmax+2));
+    double *result1 = thrust::max_element(thrust::host, u, u + length);
+    double *result2 = thrust::max_element(thrust::host, v, v + length);
     free(u);
     free(v);
     // second = delx/abs(max_vector(cudaDevice_u2, length));
-    // third= dely/abs(max_vector(cudaDevice_v2, length));
+    // third = dely/abs(max_vector(cudaDevice_v2, length));
     second = delx/abs(*result1)
-    second = delx/abs(*result2);
+    third = dely/abs(*result2);
     if(min>second){
         min=second;
         if(min>third)
