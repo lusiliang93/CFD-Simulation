@@ -393,9 +393,8 @@ int poisson_serial(int imax, int jmax,double delx,double dely,double eps,int ite
         poisson_kernel_serial<<<1,1>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 1);
         cudaThreadSynchronize();
 
-        // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
-        // res=sqrt(sum/(imax*jmax));
-        res = eps+1;
+        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        res=sqrt(sum/(imax*jmax));
         if(res<eps){
             break;
         }
@@ -430,8 +429,9 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
         poisson_kernel_odd_even<<<nBlocks, THREADSPB>>>(cudaDevice_r, cudaDevice_p, cudaDevice_p2, cudaDevice_rhs2, imax, jmax, delx, dely, omg, 0);
         cudaThreadSynchronize();
 
-        sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
-        res=sqrt(sum/(imax*jmax));
+        // sum = sum_vector(cudaDevice_r, (imax+2)*(jmax+2));
+        // res=sqrt(sum/(imax*jmax));
+        res = eps + 1;
         if(res<eps){
             break;
         }
