@@ -40,7 +40,7 @@ iproc jproc
 20 0.5 100 0.001 1.7 0.9
 2 2 2 2
 4 4
-# This is for mesh size of 128x128 and the domain is decomposed into 2x2 subdomain.
+# This is for mesh size of 128x128 and the domain is decomposed into 4x4 subdomain.
 # When running this input file, the multiplication of node and processor has to be equal to 4:
 # ./run_latedays.sh 2 8 input.txt 
 # or
@@ -53,7 +53,7 @@ iproc jproc
 20 0.5 100 0.001 1.7 0.9
 2 2 2 2
 1 1
-# This is for mesh size of 128x128 and the domain is decomposed into 2x2 subdomain.
+# This is for mesh size of 128x128 and the domain is decomposed into 1x1 subdomain.
 # When running this input file, the multiplication of node and processor has to be equal to 4:
 # ./run_latedays.sh 1 1 input.txt 
 
