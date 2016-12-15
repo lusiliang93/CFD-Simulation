@@ -172,6 +172,8 @@ int main(int argc,char* argv[]){
     t1=clock();
 	cuda_init(imax, jmax);
 	init_uvp(imax,jmax,UI,VI,PI);
+	double* u = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
+	double* v = (double*)malloc(sizeof(double)*(imax+2)*(jmax+2));
     while(t<tend){
     	copy_matrix(imax, jmax);
         if(n==0){
@@ -185,7 +187,8 @@ int main(int argc,char* argv[]){
             n++;
             printf("The current t:%f\n",t);
         }else{
-            delt = comp_delt(imax,jmax,delx,dely,Re,tau);
+
+            delt = comp_delt(u,v,imax,jmax,delx,dely,Re,tau);
             setbound(imax,jmax,wW,wE,wN,wS);
             comp_fg(imax,jmax,delt,delx,dely,GX,GY,gamma,Re);
             comp_rhs(imax,jmax,delt,delx,dely);
@@ -196,6 +199,8 @@ int main(int argc,char* argv[]){
             printf("The current t:%f\n",t);
         }
     }
+    free(u);
+    free(v);
     t2=clock();
     total_t=(double)(t2-t1)/CLOCKS_PER_SEC;
     printf("Time elapsed:%f\n",total_t);

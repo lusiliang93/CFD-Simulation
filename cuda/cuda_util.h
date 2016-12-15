@@ -8,7 +8,7 @@ void init_uvp(int imax, int jmax,int UI, int VI, int PI);
 
 void setbound(int imax,int jmax,int wW, int wE,int wN,int wS);
 
-double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau);
+// double comp_delt(int imax, int jmax,double delx,double dely,double Re,double tau);
 
 void comp_fg(int imax, int jmax,double delt,double delx,double dely,double gx,double gy,double gamma,double Re);
 void comp_rhs(int imax, int jmax,double delt,double delx,double dely);
@@ -16,3 +16,4 @@ int poisson(int imax, int jmax,double delx,double dely,double eps,int itermax,do
 void adap_uv(int imax, int jmax, double delt, double delx, double dely);
 
 void get_data(double* u, double* v, int imax, int jmax);
+double comp_delt(double* u, double* v, int imax, int jmax,double delx,double dely,double Re,double tau);
