@@ -1,5 +1,5 @@
 Folder name of serial codes:
--Lid-driven 
+-serial(which is the serial version of Lid-driven cavity) 
 -Data center 
 Folder name of parallel codes:
 -mpi
